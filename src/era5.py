@@ -15,8 +15,11 @@ import fsspec
 # GCS anonymous egress to the public ARCO bucket is variable/throttled (~0.1-1 MB/s),
 # so a whole-globe chunk can take minutes. Generous timeout so slow-but-progressing
 # reads aren't killed mid-chunk; retries handle the genuinely-stuck windows.
+# With authenticated ADC a real day-window downloads in well under a minute; a read
+# that exceeds this is almost always a hung socket, so a SHORT timeout + retry recovers
+# far faster than waiting on a long one.
 for _proto in ("gcs", "gs"):
-    fsspec.config.conf.setdefault(_proto, {}).update(timeout=600, requests_timeout=600)
+    fsspec.config.conf.setdefault(_proto, {}).update(timeout=150, requests_timeout=150)
 
 CACHE_DIR = os.environ.get("TCOF_CACHE_DIR", os.path.expanduser("~/.cache/tcof_era5"))
 
