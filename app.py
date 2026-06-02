@@ -50,32 +50,44 @@ def contrail_for(row, horizon):
     return row["contrail_co2e_gwp20_central"] if horizon == "GWP20" else row["contrail_co2e_central"]
 
 
-# ---- Leaderboard by tier ----
-st.subheader("Leaderboard — total warming (fuel CO₂ + contrails)")
 view = df.copy()
 view["contrail_co2e"] = view.apply(lambda r: contrail_for(r, horizon), axis=1)
 view["combined"] = view["fuel_co2_kg"] + view["contrail_co2e"]
+view["date"] = view["flight_id"].str.split("_").str[-1].str.replace(
+    r"(\d{4})(\d{2})(\d{2})", r"\1-\2-\3", regex=True)
 view = view.sort_values("combined", ascending=False)
 
-TIER_LABEL = {"high": "🔴 High", "medium": "🟠 Medium", "low": "🟢 Low"}
-for _, r in view.iterrows():
+# ---- Owner leaderboard (aggregated across each owner's tracked flights) ----
+st.subheader("Leaderboard — who warmed the most (fuel CO₂ + contrails)")
+agg = (view.groupby("owner_label")
+       .agg(combined=("combined", "sum"), flights=("combined", "size"),
+            ac_type=("ac_type", "first"),
+            proxy=("proxy_type_flag", "any"), bizjet=("bizjet_alt_flag", "any"))
+       .reset_index().sort_values("combined", ascending=False))
+n = len(agg)
+for i, (_, r) in enumerate(agg.iterrows()):
+    tier = "🔴 High" if i < n / 3 else ("🟢 Low" if i >= 2 * n / 3 else "🟠 Medium")
     flags = []
-    if r["proxy_type_flag"]:
+    if r["proxy"]:
         flags.append("⚠️ proxy type")
-    if r["bizjet_alt_flag"]:
+    if r["bizjet"]:
         flags.append("⚠️ above CoCiP cap → under-counted")
     c1, c2, c3, c4 = st.columns([3, 2, 2, 3])
-    c1.markdown(f"**{r['owner_label']}**  \n{r['ac_type']} · {r['registration']}")
-    c2.metric("Combined CO₂e", t(r["combined"]))
-    c3.metric("Contrails add", f"+{100*r['contrail_co2e']/r['fuel_co2_kg']:.0f}%" if r["fuel_co2_kg"] else "—")
-    c4.markdown(f"{TIER_LABEL.get(r['tier'], r['tier'])}  \n" + (" · ".join(flags) if flags else ""))
+    c1.markdown(f"**{r['owner_label']}**  \n{r['ac_type']}")
+    c2.metric(f"Total CO₂e ({int(r['flights'])} flights)", t(r["combined"]))
+    c3.markdown(f"### {tier}")
+    c4.markdown((" · ".join(flags)) if flags else "")
+st.caption(f"Aggregated over {len(view)} tracked December-2024 flights for {n} owners. "
+           "Totals are illustrative of the sampled flights, not annual.")
 
 st.markdown("---")
 
 # ---- Flight detail: the two-number reveal ----
 st.subheader("Flight detail — the same flight, two numbers")
-owner = st.selectbox("Pick a flight", view["owner_label"].tolist())
-row = view[view["owner_label"] == owner].iloc[0]
+view["flabel"] = (view["owner_label"] + " · " + view["date"] + " · "
+                  + (view["combined"] / 1000).round(1).astype(str) + " t")
+choice = st.selectbox("Pick a flight", view["flabel"].tolist())
+row = view[view["flabel"] == choice].iloc[0]
 contrail = contrail_for(row, horizon)
 combined = row["fuel_co2_kg"] + contrail
 lo = row["fuel_co2_kg"] + row["contrail_co2e_low"]

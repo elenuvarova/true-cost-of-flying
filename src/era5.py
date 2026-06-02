@@ -12,8 +12,11 @@ import fsspec
 
 # Make every anonymous GCS read time-bounded (seconds). A hung socket now errors
 # and is retried rather than hanging the process indefinitely.
+# GCS anonymous egress to the public ARCO bucket is variable/throttled (~0.1-1 MB/s),
+# so a whole-globe chunk can take minutes. Generous timeout so slow-but-progressing
+# reads aren't killed mid-chunk; retries handle the genuinely-stuck windows.
 for _proto in ("gcs", "gs"):
-    fsspec.config.conf.setdefault(_proto, {}).update(timeout=180, requests_timeout=180)
+    fsspec.config.conf.setdefault(_proto, {}).update(timeout=600, requests_timeout=600)
 
 CACHE_DIR = os.environ.get("TCOF_CACHE_DIR", os.path.expanduser("~/.cache/tcof_era5"))
 

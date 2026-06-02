@@ -6,3 +6,4 @@ openap
 gcsfs
 pyarrow
 platformdirs
+pyproj

@@ -11,6 +11,7 @@ attrs==26.1.0
 certifi==2026.5.20
     # via
     #   netcdf4
+    #   pyproj
     #   requests
 cffi==2.0.0
     # via cryptography
@@ -173,6 +174,8 @@ pycparser==3.0
     # via cffi
 pyparsing==3.3.2
     # via matplotlib
+pyproj==3.7.2
+    # via -r requirements-batch.in
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
