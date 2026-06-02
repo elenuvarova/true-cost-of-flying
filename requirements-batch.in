@@ -1,0 +1,8 @@
+# Offline batch env (CoCiP + ERA5 + OpenAP). Heavy; never deployed.
+# openap>=2.5.0 forces numpy>=2.1 -> whole stack is numpy-2-ABI-coupled; pin everything.
+pycontrails[zarr]
+netcdf4
+openap
+gcsfs
+pyarrow
+platformdirs

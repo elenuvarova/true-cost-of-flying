@@ -1,0 +1,5 @@
+# Deployed app (read-only viz). Kept tiny; no pycontrails/ERA5/openap.
+streamlit
+pydeck
+pandas
+pyarrow
