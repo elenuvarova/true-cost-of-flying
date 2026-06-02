@@ -13,17 +13,29 @@ import pandas as pd
 FT_TO_M = 0.3048
 
 
-def _open_maybe_gzip(path):
-    """readsb trace files are gzip-compressed despite the .json extension."""
-    with open(path, "rb") as f:
-        head = f.read(2)
-    return gzip.open(path, "rt") if head == b"\x1f\x8b" else open(path)
+def _read_json(path, attempts=4):
+    """Read a (possibly gzip) JSON trace, robust to iCloud-evicted placeholder files.
+
+    data/raw/traces lives in an iCloud-synced folder; an evicted file can read short/
+    stubbed, so we read ALL bytes (which also forces materialisation) and retry."""
+    import time
+    last = None
+    for i in range(attempts):
+        with open(path, "rb") as f:
+            raw = f.read()
+        try:
+            if raw[:2] == b"\x1f\x8b":
+                raw = gzip.decompress(raw)
+            return json.loads(raw)
+        except Exception as e:  # short/placeholder read -> retry to let iCloud hydrate
+            last = e
+            time.sleep(1.5)
+    raise last
 
 
 def load_trace(path):
     """Return (meta dict, points DataFrame[time, latitude, longitude, altitude_m, gs_kt])."""
-    with _open_maybe_gzip(path) as f:
-        d = json.load(f)
+    d = _read_json(path)
     meta = {"icao": d.get("icao"), "registration": d.get("r"),
             "type": (d.get("t") or "").upper(), "desc": d.get("desc")}
     base = pd.Timestamp(d["timestamp"], unit="s", tz="UTC")

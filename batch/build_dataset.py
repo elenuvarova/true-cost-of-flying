@@ -109,8 +109,18 @@ def process_trace(path, cache):
 def main():
     os.makedirs(TRACKS, exist_ok=True)
     cache = DiskCacheStore(cache_dir=os.environ.get("TCOF_CACHE_DIR", os.path.expanduser("~/.cache/tcof_era5")))
-    traces = sorted(glob.glob(os.path.join(RAW, "*.json.gz")))
-    print(f"processing {len(traces)} harvested traces...")
+    # Cap flights per owner (keep the richest tracks by file size) so the leaderboard
+    # stays readable and the build doesn't grind ERA5 for dozens of redundant flights.
+    PER_OWNER_CAP = int(os.environ.get("TCOF_PER_OWNER_CAP", "6"))
+    by_owner = {}
+    for p in glob.glob(os.path.join(RAW, "*.json.gz")):
+        h = os.path.basename(p).split("__")[0].lower()
+        by_owner.setdefault(OWNERS.get(h, {}).get("owner", h), []).append(p)
+    traces = []
+    for owner, ps in by_owner.items():
+        traces += sorted(ps, key=lambda x: os.path.getsize(x), reverse=True)[:PER_OWNER_CAP]
+    traces = sorted(traces)
+    print(f"processing {len(traces)} traces ({len(by_owner)} owners, cap {PER_OWNER_CAP}/owner)...")
     rows, geos = [], []
     for p in traces:
         try:
