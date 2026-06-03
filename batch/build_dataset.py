@@ -85,6 +85,11 @@ def process_trace(path, cache):
         o = pd.read_parquet(cpath)
         ef = float(np.nansum(o["ef"])) if "ef" in o else 0.0
         print("    (cached CoCiP)", flush=True)
+    elif os.environ.get("TCOF_CACHED_ONLY"):
+        # Fast/safe rebuild: surface already-computed flights without triggering new
+        # ERA5+CoCiP for any flight whose physics isn't cached yet.
+        print("    (no cache; skipped — TCOF_CACHED_ONLY)", flush=True)
+        return None
     else:
         t1 = (pd.Timestamp(fl.time.iloc[-1]) + pd.Timedelta(hours=5)).ceil("h")
         tw = (t0.strftime("%Y-%m-%dT%H:%M:%S"), t1.strftime("%Y-%m-%dT%H:%M:%S"))

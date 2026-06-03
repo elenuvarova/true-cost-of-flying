@@ -154,6 +154,75 @@ st.caption(f"Aggregated over {len(view)} tracked Dec-2024/Jan-2025 flights for {
            "Tiers (not a precise 1..N rank) because magnitude reshuffles with metric. Illustrative of the "
            "sampled flights, not annual.")
 
+# ---- Celebrity portraits (verified copy; GWP100 snapshot of the committed set) ----
+# Numbers + prose were adversarially fact-checked against the data (workflow); shown at
+# GWP100. Ordered Trump→Gates→Musk→Swift: from "fuel is the story" to "contrails can double a flight".
+PORTRAITS = [
+    {"name": "Donald Trump", "badge": "🌆 dusk", "ac": "Boeing 757-200 · in-domain (cleanest numbers)",
+     "fuel": "226.8 t", "contrail": "≈0 t", "delta": "+0.06 t (64 kg)", "wc": (1, 0, 5),
+     "standout": "**Dec 13, NY→Palm Beach** — the *only* one of six flights with any contrail: **+64 kg** (0.2% of its fuel). The other five: zero.",
+     "chips": ["in-domain 757 → not altitude-flagged", "5/6 ~zero = power-law", "fuel+contrails only (not 3× ERF)", "we headline tonnes, not the 0.2% ratio"],
+     "framing": "Across six tracked flights, all on the same in-domain Boeing 757-200 (N757AF, “Trump Force One”), the fuel burn totals **226.8 t of CO₂ — the second-largest fuel footprint in this dataset**, behind the New England Patriots' 616.2 t. Because the 757 cruises well below CoCiP's altitude cap, these are among the cleanest, most trustworthy numbers we have (no bizjet under-counting caveat). Yet the contrail story is almost nothing: five of six flights formed no measurable contrail, and the lone exception added only **0.064 t CO₂e** (GWP100) — about 0.2% of that flight's fuel. The honest contrast: a large warming footprint that is overwhelmingly the jet fuel itself."},
+    {"name": "Bill Gates", "badge": "🌙 night (standout)", "ac": "Gulfstream G650ER",
+     "fuel": "69.3 t", "contrail": "+4.2 t", "delta": "+6% net", "wc": (1, 1, 5),
+     "standout": "**Dec 9, Las Vegas→Washington** (night) — painted a warming contrail **+5.6 t (+32% of fuel)**, in-domain → the cleanest evidence in his set. One daytime flight slightly *cooled*.",
+     "chips": ["~70% contrail uncertainty", "4/7 above-cap → under-counted", "3 of 5 zeros are above-cap (not confirmed clean)", "fuel+contrails only"],
+     "framing": "The dominant cost of Bill Gates's tracked flying is plain fuel: 7 flights on his Gulfstream G650ER (N887WM) emitted **69.3 t of CO₂**. Contrails were a small, two-sided add-on netting **+4.2 t** at GWP100 — only one flight warmed (+5.56 t, a night flight), one slightly cooled (−1.39 t, a daytime contrail reflecting sunlight), and five showed little or no modelled contrail. Of those five, only two (Dec 12, Dec 4) are *clean in-domain* zeros; the other three are above-cap flights whose 0.0 is partly an under-count, not confirmed non-formation. The cleanest in-domain evidence is the one night flight that clearly warmed, versus the one daytime flight that didn't."},
+    {"name": "Elon Musk", "badge": "🌙↔☀️ cuts both ways", "ac": "Gulfstream G650ER",
+     "fuel": "84.4 t", "contrail": "−25.8 t", "delta": "net cooling*", "wc": (1, 2, 4),
+     "standout": "**Dec 12, San Jose→Austin** (night) — **+4.9 t warming (+37%)**, his only in-domain flight → cleanest case. Two *daytime* flights formed ice that net-**cooled**.",
+     "chips": ["~70% contrail uncertainty", "4/7 above-cap → under-counted; cooling is soft", "net cooling = daytime geometry, small sample", "fuel+contrails only"],
+     "framing": "Across 7 tracked flights, Elon Musk's Gulfstream G650ER burned fuel for **84.4 t of CO₂** — the certain, in-the-tailpipe number. Contrails were the honest mix: 4 flights formed essentially none, 1 night flight warmed (+4.9 t at GWP100), and 2 daytime flights formed ice that reflected enough sunlight to net-*cool*, so on central estimates his contrail term nets to about **−26 t**. The G650ER routinely cruises above CoCiP's ~13 km cap, so 4 flights are altitude-flagged and **under-counted, not exaggerated** — the cooling totals in particular could shrink with full physics. *Net cooling here is a small-sample, daytime-geometry result; the durable harm is the fuel CO₂.*"},
+    {"name": "Taylor Swift", "badge": "☀️ day (standout)", "ac": "Dassault Falcon 7X",
+     "fuel": "121.8 t", "contrail": "+18.4 t", "delta": "+15% net", "wc": (3, 0, 9),
+     "standout": "**Dec 10, Nashville→Montana** (day) — contrails **+12.1 t**, almost matching the 12.7 t of fuel and **~doubling that single flight's warming (≈1.96×)**.",
+     "chips": ["~70% contrail uncertainty", "5/12 above-cap → likely UNDER-counted (a floor)", "proxy aircraft type", "9/12 ~zero = power-law"],
+     "framing": "Across 12 tracked flights on her Dassault Falcon 7X (N621MM), the certain cost is **121.8 t of fuel CO₂**. Contrails are a separate, more uncertain story (~70%): 9 of 12 flights formed essentially none — the normal power-law outcome — while 3 left warming contrails, adding **18.4 t CO₂e** (GWP100). The most telling flight, Dec 10, added **~12.1 t** — almost matching its own 12.7 t of fuel and pushing that flight's total to **~1.96× fuel-only**. (The Falcon 7X cruises above CoCiP's cap, so this is a likely *floor*, not an exaggeration.) This is fuel CO₂ + contrails only — a partial accounting, **not** the aviation-fleet “3×”, which is a different statistic."},
+]
+
+
+def wc_bar(wc):
+    """Tiny 3-segment proportion bar: warming / cooling / near-zero flight counts."""
+    w, c, z = wc
+    base = "display:flex;align-items:center;justify-content:center;"
+    seg = []
+    if w:
+        seg.append(f'<div style="{base}flex:{w};background:#e2503a">{w} 🔥</div>')
+    if c:
+        seg.append(f'<div style="{base}flex:{c};background:#4e8fd6">{c} ❄</div>')
+    if z:
+        seg.append(f'<div style="{base}flex:{z};background:#33455c">{z} ○</div>')
+    return ('<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin:.35rem 0;'
+            'font-size:.68rem;font-weight:700;color:#fff">' + "".join(seg) + '</div>')
+
+
+st.markdown('<div class="sec">What contrails actually did for 4 famous flyers</div>', unsafe_allow_html=True)
+st.markdown(
+    "Burning jet fuel is the **certain** harm. Contrails are the **wildcard** — a *concentrated* effect, "
+    "not a flat multiplier. Trump's 757 burned the most fuel of these four yet left near-zero contrails "
+    "(and flies in-domain, so it's our most trustworthy number); at the other end, one Taylor Swift flight's "
+    "contrails nearly *doubled* its warming. Most flights here formed almost none — the headline isn't "
+    "“always 3×”, it's **“usually near zero, occasionally a lot.”**")
+pcols = st.columns(2)
+for i, p in enumerate(PORTRAITS):
+    with pcols[i % 2]:
+        with st.container(border=True):
+            st.markdown(f"**{p['name']}** &nbsp; <span class='chip'>{p['badge']}</span>", unsafe_allow_html=True)
+            st.caption(p["ac"])
+            k1, k2 = st.columns(2)
+            k1.metric("Fuel CO₂", p["fuel"])
+            k2.metric("Contrails (GWP100)", p["contrail"], p["delta"], delta_color="off")
+            w, c, z = p["wc"]
+            st.markdown(wc_bar(p["wc"]), unsafe_allow_html=True)
+            st.caption(f"{w} warming · {c} cooling · {z} near-zero of {w+c+z} flights")
+            st.markdown(p["standout"])
+            st.markdown("".join(f'<span class="chip">{esc(ch)}</span>' for ch in p["chips"]),
+                        unsafe_allow_html=True)
+            with st.expander("The full picture"):
+                st.markdown(p["framing"])
+st.caption("Shown at GWP100 — a verified snapshot of the committed dataset (numbers fact-checked against the "
+           "data). Same physics, four very different contrail outcomes.")
+
 # ---- Flight detail: the two-number reveal (the aha) ----
 st.markdown('<div class="sec">The reveal — same flight, two numbers</div>', unsafe_allow_html=True)
 view["flabel"] = (view["owner_label"] + " · " + view["date"] + " · "
@@ -167,12 +236,18 @@ lo = fuel + row["contrail_co2e_low"]
 hi = fuel + row["contrail_co2e_high"]
 pct = 100 * contrail / fuel if fuel else 0
 
+# A short, low-fuel flight that crossed one intense contrail patch yields a huge, UNSTABLE
+# ratio (tiny denominator). Headline the absolute tonnes, not the raw %, in that case.
+unstable = contrail > 0 and pct > 150
 if contrail > 0:
     fuel_w = 100 * fuel / combined
     bar = (f'<div class="bar"><span class="b-fuel" style="width:{fuel_w:.0f}%">Fuel {fuel/1000:,.0f} t</span>'
            f'<span class="b-warm" style="width:{100-fuel_w:.0f}%">+{contrail/1000:,.0f} t contrails</span></div>'
            f'<div class="barcap">The red slice is the warming no other tracker counts.</div>')
-    delta = f'<span class="delta-pill">contrails add +{pct:.0f}%</span>'
+    if unstable:
+        delta = f'<span class="delta-pill">+{contrail/1000:,.1f} t contrails — contrail-dominated short flight</span>'
+    else:
+        delta = f'<span class="delta-pill">contrails add +{pct:.0f}%</span>'
     combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
 else:
     bar = ('<div class="bar"><span class="b-fuel" style="width:100%">Fuel '
@@ -189,7 +264,9 @@ st.markdown(
     f'</div>{bar}</div>',
     unsafe_allow_html=True)
 st.caption(f"{horizon} · uncertainty band {t(lo)}–{t(hi)} · contrail term carries ~70% uncertainty (IPCC "
-           f"'low confidence'). " + ("Above CoCiP's ~13 km cap → likely under-counted." if row["bizjet_alt_flag"] else ""))
+           f"'low confidence'). " + ("Above CoCiP's ~13 km cap → likely under-counted. " if row["bizjet_alt_flag"] else "")
+           + ("This is a short, low-fuel flight where one intense contrail patch dominates — so we show the "
+              "absolute tonnes, not the unstable +%, which here would read misleadingly high." if unstable else ""))
 
 # ---- Map ----
 gj = load_track(row["flight_id"])
