@@ -38,14 +38,16 @@ def download_day(day, dldir):
         year = day[:4]
         tag = f"v{day.replace('-', '.')}-planes-readsb-prod-0"
         repo = f"adsblol/globe_history_{year}"
-        if not glob.glob(f"{dldir}/*.tar.*"):
+        # Some days ship a single `*.tar`, others split into `*.tar.aa`/`*.tar.ab`.
+        # `*.tar*` matches both shapes.
+        if not glob.glob(f"{dldir}/*.tar*"):
             print(f"  downloading {tag} ...", flush=True)
             r = subprocess.run(["gh", "release", "download", tag, "-R", repo,
-                                "-D", dldir, "-p", "*.tar.*"],
+                                "-D", dldir, "-p", "*.tar*"],
                                capture_output=True, text=True)
             if r.returncode != 0:
                 print(f"  !! download failed: {r.stderr.strip()[:160]}"); return None
-        parts = sorted(glob.glob(f"{dldir}/*.tar.*"))
+        parts = sorted(glob.glob(f"{dldir}/*.tar*"))
     if not parts:
         return None
     combined = os.path.join(dldir, "combined.tar")

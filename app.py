@@ -158,26 +158,26 @@ st.caption(f"Aggregated over {len(view)} tracked Dec-2024/Jan-2025 flights for {
 # Numbers + prose were adversarially fact-checked against the data (workflow); shown at
 # GWP100. Ordered Trump→Gates→Musk→Swift: from "fuel is the story" to "contrails can double a flight".
 PORTRAITS = [
-    {"name": "Donald Trump", "badge": "🌆 dusk", "ac": "Boeing 757-200 · in-domain (cleanest numbers)",
-     "fuel": "226.8 t", "contrail": "≈0 t", "delta": "+0.06 t (64 kg)", "wc": (1, 0, 5),
-     "standout": "**Dec 13, NY→Palm Beach** — the *only* one of six flights with any contrail: **+64 kg** (0.2% of its fuel). The other five: zero.",
-     "chips": ["in-domain 757 → not altitude-flagged", "5/6 ~zero = power-law", "fuel+contrails only (not 3× ERF)", "we headline tonnes, not the 0.2% ratio"],
-     "framing": "Across six tracked flights, all on the same in-domain Boeing 757-200 (N757AF, “Trump Force One”), the fuel burn totals **226.8 t of CO₂ — the second-largest fuel footprint in this dataset**, behind the New England Patriots' 616.2 t. Because the 757 cruises well below CoCiP's altitude cap, these are among the cleanest, most trustworthy numbers we have (no bizjet under-counting caveat). Yet the contrail story is almost nothing: five of six flights formed no measurable contrail, and the lone exception added only **0.064 t CO₂e** (GWP100) — about 0.2% of that flight's fuel. The honest contrast: a large warming footprint that is overwhelmingly the jet fuel itself."},
+    {"name": "Donald Trump", "badge": "🌙 one night flight = all 90 t", "ac": "Boeing 757-200 · in-domain (most trustworthy numbers)",
+     "fuel": "264.6 t", "contrail": "+90.2 t", "delta": "+34% across 7 flights", "wc": (1, 0, 6),
+     "standout": "**Feb 14, NY→Palm Beach** (deep night) — crossed a ~130 km ice-supersaturated band → **+90 t contrail** (2.4× that flight's fuel). The *same NY→Palm Beach route* in December formed **nothing**. **6 of 7 flights: ~zero.**",
+     "chips": ["in-domain 757 → most trustworthy (not flagged)", "across 7 flights contrails = +34% (NOT a 3×)", "90 t band 75–110 t · ~70% uncertainty", "trigger is ISSR-crossing, not just night"],
+     "framing": "Donald Trump's seven tracked flights were all on the same **in-domain Boeing 757-200** (N757AF, “Trump Force One”), cruising near 38,000 ft — below CoCiP's ~13 km cap — so these are among the **cleanest, least-caveated numbers in the dataset**. The fuel reality is blunt: **264.6 t of CO₂**, the largest fuel footprint of any *individual* tracked here (second overall only to the New England Patriots' team jet, ~668 t). Contrails tell almost the opposite story: six of seven flights formed essentially zero, and effectively all **90.2 t of contrail CO₂e** came from one deep-night NY→West Palm Beach run that crossed a ~130 km ice-supersaturated band over NJ/Delaware. Across all 7 flights that lifts his warming **+34%** on top of fuel (90.2 / 264.6) — squarely in the honest per-flight ~30–60% GWP100 range, **not** the ~3× whole-fleet ERF figure — and it is concentrated in one flight, not spread evenly. Tellingly, a *second* Trump flight was also deep-night yet formed zero: night alone isn't the trigger — **crossing ice-supersaturated air is** (night just means no daytime sunlight to offset the warming). Fuel CO₂ + contrails only; ~70% contrail uncertainty (90.2 t spans ~75–110 t)."},
     {"name": "Bill Gates", "badge": "🌙 night (standout)", "ac": "Gulfstream G650ER",
-     "fuel": "69.3 t", "contrail": "+4.2 t", "delta": "+6% net", "wc": (1, 1, 5),
-     "standout": "**Dec 9, Las Vegas→Washington** (night) — painted a warming contrail **+5.6 t (+32% of fuel)**, in-domain → the cleanest evidence in his set. One daytime flight slightly *cooled*.",
-     "chips": ["~70% contrail uncertainty", "4/7 above-cap → under-counted", "3 of 5 zeros are above-cap (not confirmed clean)", "fuel+contrails only"],
-     "framing": "The dominant cost of Bill Gates's tracked flying is plain fuel: 7 flights on his Gulfstream G650ER (N887WM) emitted **69.3 t of CO₂**. Contrails were a small, two-sided add-on netting **+4.2 t** at GWP100 — only one flight warmed (+5.56 t, a night flight), one slightly cooled (−1.39 t, a daytime contrail reflecting sunlight), and five showed little or no modelled contrail. Of those five, only two (Dec 12, Dec 4) are *clean in-domain* zeros; the other three are above-cap flights whose 0.0 is partly an under-count, not confirmed non-formation. The cleanest in-domain evidence is the one night flight that clearly warmed, versus the one daytime flight that didn't."},
+     "fuel": "106.2 t", "contrail": "+6.9 t", "delta": "+6% net", "wc": (2, 1, 7),
+     "standout": "**Dec 9, transcontinental redeye** (night, in-domain) — **+5.6 t (+32% of fuel)**, a stable ratio on a big fuel base. A daytime leg the same month *cooled* (−1.4 t).",
+     "chips": ["~70% contrail uncertainty", "5/10 above-cap → under-counted", "the 2 warming flights are in-domain (cleanest)", "fuel+contrails only (not 3× ERF)"],
+     "framing": "Across 10 tracked flights of Bill Gates's Gulfstream G650ER (N887WM), the fuel is the headline: **106.2 t of CO₂**, ~10.6 t per hop. Contrails were a small, lumpy add-on, not a multiplier: 7 of 10 flights formed essentially none, 2 night flights warmed (+5.56 t and +2.74 t at GWP100), and 1 daytime flight cooled slightly (−1.39 t), for a net of only **~+6.9 t**. The standout — a transcontinental redeye where a night contrail added 5.56 t on top of 17.2 t of fuel (**+32%**, a stable ratio on a large denominator) — shows the climate-advocate tension honestly: most of his flights made no contrail, but one night flight in the right air meaningfully amplified it, while a daytime leg did the opposite. The 2 warming flights are in-domain (cleanest); 5 of 10 cruise above CoCiP's cap (under-counted, not extrapolated). Fuel CO₂ + contrails only; ~70% uncertainty."},
     {"name": "Elon Musk", "badge": "🌙↔☀️ cuts both ways", "ac": "Gulfstream G650ER",
-     "fuel": "84.4 t", "contrail": "−25.8 t", "delta": "net cooling*", "wc": (1, 2, 4),
-     "standout": "**Dec 12, San Jose→Austin** (night) — **+4.9 t warming (+37%)**, his only in-domain flight → cleanest case. Two *daytime* flights formed ice that net-**cooled**.",
-     "chips": ["~70% contrail uncertainty", "4/7 above-cap → under-counted; cooling is soft", "net cooling = daytime geometry, small sample", "fuel+contrails only"],
-     "framing": "Across 7 tracked flights, Elon Musk's Gulfstream G650ER burned fuel for **84.4 t of CO₂** — the certain, in-the-tailpipe number. Contrails were the honest mix: 4 flights formed essentially none, 1 night flight warmed (+4.9 t at GWP100), and 2 daytime flights formed ice that reflected enough sunlight to net-*cool*, so on central estimates his contrail term nets to about **−26 t**. The G650ER routinely cruises above CoCiP's ~13 km cap, so 4 flights are altitude-flagged and **under-counted, not exaggerated** — the cooling totals in particular could shrink with full physics. *Net cooling here is a small-sample, daytime-geometry result; the durable harm is the fuel CO₂.*"},
+     "fuel": "117.5 t", "contrail": "−18.7 t", "delta": "net negative*", "wc": (2, 2, 7),
+     "standout": "**Dec 15, DC→Palm Beach** (night, in-domain) — ~**7 t contrail on ~7 t fuel** (we show absolute tonnes, *not* the unstable +103% on a small fuel base). Two *daytime* flights net-**cooled** (down to −19 t).",
+     "chips": ["~70% contrail uncertainty", "6/11 above-cap → under-counted; cooling is fragile", "net negative rests on 2 daytime flagged flights — read as a MIX, not 'climate-positive'", "fuel+contrails only"],
+     "framing": "Across 11 tracked flights on a single Gulfstream G650ER, Elon Musk's certain cost is fuel: **~117.5 t of CO₂**. Contrails cut both ways: 7 of 11 flights formed little or none, the 2 night flights warmed (up to +7.07 t at GWP100), and 2 daytime flights reflected enough sunlight to net-*cool* (down to −19.18 t). Summed, the contrail term is slightly negative (~**−18.7 t**) — but that figure is **fragile**: it rests on just two daytime cooling flights, both above CoCiP's cap, so read it as a *mix*, not a claim that his flying is climate-positive. The cleanest case is the in-domain Dec-15 night flight whose contrail warming (~7 t) roughly equals its own fuel CO₂ (~6.8 t) — which is exactly why the raw **+103% must not be headlined**: it's a contrail-dominated flight with a small fuel denominator, so the honest read is the absolute tonnes. Fuel CO₂ + contrails only; ~70% uncertainty; per-flight contrails add ~30–60% at GWP100 on the flights that form them, and 0% on the seven that don't."},
     {"name": "Taylor Swift", "badge": "☀️ day (standout)", "ac": "Dassault Falcon 7X",
      "fuel": "121.8 t", "contrail": "+18.4 t", "delta": "+15% net", "wc": (3, 0, 9),
-     "standout": "**Dec 10, Nashville→Montana** (day) — contrails **+12.1 t**, almost matching the 12.7 t of fuel and **~doubling that single flight's warming (≈1.96×)**.",
+     "standout": "**Dec 10, Tennessee→Montana** (day) — contrails **+12.1 t**, almost matching the 12.7 t of fuel → **~2× that flight**. The jet topped 13.1 km (above the cap), so this is a *floor*, not an over-count.",
      "chips": ["~70% contrail uncertainty", "5/12 above-cap → likely UNDER-counted (a floor)", "proxy aircraft type", "9/12 ~zero = power-law"],
-     "framing": "Across 12 tracked flights on her Dassault Falcon 7X (N621MM), the certain cost is **121.8 t of fuel CO₂**. Contrails are a separate, more uncertain story (~70%): 9 of 12 flights formed essentially none — the normal power-law outcome — while 3 left warming contrails, adding **18.4 t CO₂e** (GWP100). The most telling flight, Dec 10, added **~12.1 t** — almost matching its own 12.7 t of fuel and pushing that flight's total to **~1.96× fuel-only**. (The Falcon 7X cruises above CoCiP's cap, so this is a likely *floor*, not an exaggeration.) This is fuel CO₂ + contrails only — a partial accounting, **not** the aviation-fleet “3×”, which is a different statistic."},
+     "framing": "Across 12 tracked flights, Taylor Swift's Falcon 7X (N621MM) burned its way to **121.8 t of fuel CO₂** — the certain number. Contrails are a different story: 9 of 12 flights formed essentially none (a power-law reality, not a measurement failure), but 3 warmed, adding **18.4 t CO₂e** over 100 years. The standout is the Dec 10 Tennessee→Montana leg, where 12.1 t of daytime contrail warming sat almost on top of its 12.7 t of fuel CO₂ — **roughly a 2× flight**. The honest catch: this jet climbed to 13.1 km, just past CoCiP's ~13 km cap, so its contrails are flagged **UNDER-counted, not extrapolated** — the real warming is at least this. Because the fuel denominator is large (12.7 t), the 96% ratio is stable and trustworthy, unlike short low-fuel flights. Fuel CO₂ + contrails only; ~70% uncertainty; **not** the aviation-fleet ~3×."},
 ]
 
 
@@ -198,11 +198,12 @@ def wc_bar(wc):
 
 st.markdown('<div class="sec">What contrails actually did for 4 famous flyers</div>', unsafe_allow_html=True)
 st.markdown(
-    "Burning jet fuel is the **certain** harm. Contrails are the **wildcard** — a *concentrated* effect, "
-    "not a flat multiplier. Trump's 757 burned the most fuel of these four yet left near-zero contrails "
-    "(and flies in-domain, so it's our most trustworthy number); at the other end, one Taylor Swift flight's "
-    "contrails nearly *doubled* its warming. Most flights here formed almost none — the headline isn't "
-    "“always 3×”, it's **“usually near zero, occasionally a lot.”**")
+    "Burning jet fuel is the **certain** harm. Contrails are the **wildcard** — a *concentrated* effect "
+    "triggered by crossing ice-supersaturated air (usually at night), **not a flat multiplier**. Six of "
+    "Trump's seven 757 flights formed essentially none — then one deep-night run added **90 t**, more than "
+    "double that flight's fuel CO₂, on the in-domain airframe we trust most. Swift's Dec-10 nearly doubled a "
+    "flight; Musk's contrails cut both ways. The honest headline isn't “always 3×”, it's "
+    "**“usually near zero, occasionally a lot.”** (All GWP100; fuel + contrails only; ~70% contrail uncertainty.)")
 pcols = st.columns(2)
 for i, p in enumerate(PORTRAITS):
     with pcols[i % 2]:
@@ -349,8 +350,9 @@ with st.expander("Validation — does this agree with published science?"):
         f"*does it reproduce the literature?* These numbers are computed live from the {n_tot} committed flights:\n\n"
         f"- **Contrail-formation incidence:** {n_forming}/{n_tot} = **{100*n_forming/n_tot:.0f}%** of flights form a "
         f"persistent contrail; **{n_warming}/{n_tot} = {100*n_warming/n_tot:.0f}%** form a *net-warming* one. "
-        f"Teoh et al. 2024 report ~24% / ~14% across the global fleet — our private-jet, winter sample lands in the "
-        f"same place (slightly higher, as cold high-latitude air favours contrails). ✅\n"
+        f"Teoh et al. 2024 report ~24% / ~14% across the global fleet — the same order of magnitude. Ours runs "
+        f"higher both because winter favours contrails **and** because we deliberately harvested extra *night* "
+        f"flights (which form more), so read this as an upper estimate of incidence, not an unbiased fleet match. ✅\n"
         f"- **The power-law is visible inside single flights:** a single track segment can carry ~all of a flight's "
         f"energy forcing — reproducing Teoh's '2.7% of flights = 80% of forcing' at per-flight scale. It's why we "
         f"show *tiers*, not a precise 1..N rank. ✅\n"

@@ -1,0 +1,43 @@
+hex,date,owner,night_share,contrail_ef_J,contrail_co2e_t,status
+a40b24,2024-12-14,New England Patriots,1.000,0.0,0.0,cached
+a81b13,2024-12-14,Taylor Swift,0.000,,,skip_daytime
+a835af,2024-12-14,Elon Musk,1.000,0.0,0.0,cached
+a89621,2024-12-14,Eric Schmidt,0.125,,,skip_daytime
+aa3410,2024-12-14,Donald Trump,0.000,,,skip_daytime
+a835af,2024-12-15,Elon Musk,1.000,24835106374236.75,7.066,cached
+ac39d6,2024-12-15,Bill Gates,1.000,0.0,0.0,cached
+a1f4c5,2024-12-24,New England Patriots,0.467,,,skip_daytime
+a835af,2024-12-24,Elon Musk,0.000,,,skip_daytime
+a000e8,2024-12-28,Phil Knight (Nike),0.000,,,skip_daytime
+ac39d6,2024-12-28,Bill Gates,1.000,0.0,0.0,cached
+a000e8,2025-01-09,Phil Knight (Nike),0.411,,,skip_daytime
+a9247d,2025-01-09,Mark Zuckerberg,0.000,,,skip_daytime
+aa3410,2025-01-09,Donald Trump,0.000,,,skip_daytime
+ab0a46,2025-01-09,Kylie Jenner,1.000,0.0,0.0,cached
+ac39d6,2025-01-09,Bill Gates,0.000,,,skip_daytime
+a835af,2025-01-13,Elon Musk,1.000,0.0,0.0,cached
+a89621,2025-01-13,Eric Schmidt,0.540,0.0,0.0,cached
+ab0a46,2025-01-13,Kylie Jenner,0.815,0.0,0.0,cached
+ac39d6,2025-01-13,Bill Gates,0.000,,,skip_daytime
+a18845,2025-01-18,Kim Kardashian,1.000,0.0,0.0,cached
+a81b13,2025-01-18,Taylor Swift,0.000,,,skip_daytime
+a835af,2025-01-18,Elon Musk,1.000,0.0,0.0,cached
+a9247d,2025-01-18,Mark Zuckerberg,0.000,,,skip_daytime
+aa3410,2025-01-18,Donald Trump,0.000,,,skip_daytime
+a9247d,2025-01-22,Mark Zuckerberg,1.000,0.0,0.0,cached
+a81b13,2025-01-26,Taylor Swift,0.000,,,skip_daytime
+a9247d,2025-01-26,Mark Zuckerberg,0.000,,,skip_daytime
+ac39d6,2025-01-26,Bill Gates,0.000,,,skip_daytime
+a40b24,2025-02-02,New England Patriots,1.000,774450707968.8424,0.22,cached
+ac39d6,2025-02-02,Bill Gates,0.000,,,skip_daytime
+a9247d,2025-02-06,Mark Zuckerberg,0.000,,,skip_daytime
+ac39d6,2025-02-06,Bill Gates,1.000,9638634924784.191,2.742,cached
+a81b13,2025-02-10,Taylor Swift,0.000,,,skip_daytime
+a81b13,2025-02-14,Taylor Swift,0.000,,,skip_daytime
+a9247d,2025-02-14,Mark Zuckerberg,0.000,,,skip_daytime
+aa3410,2025-02-14,Donald Trump,1.000,316902635705783.8,90.168,cached
+a18845,2025-02-18,Kim Kardashian,0.000,,,skip_daytime
+a1f4c5,2025-02-18,New England Patriots,0.000,,,skip_daytime
+a89621,2025-02-18,Eric Schmidt,0.255,,,skip_daytime
+a9247d,2025-02-18,Mark Zuckerberg,0.154,,,skip_daytime
+aa3410,2025-02-18,Donald Trump,0.000,,,skip_daytime
