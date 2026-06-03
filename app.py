@@ -40,7 +40,8 @@ st.markdown("""
 @media (max-width: 640px){ .block-container { padding-left: .9rem; padding-right: .9rem; padding-top: 1.2rem; } }
 #MainMenu, footer, .stDeployButton { visibility: hidden; }
 /* Hero */
-.hero-title { font-size: clamp(1.9rem, 7vw, 3rem); font-weight: 800; line-height: 1.05; margin: 0 0 .4rem; }
+.hero-title { font-size: clamp(1.9rem, 7vw, 3rem); font-weight: 800; line-height: 1.18; margin: 0 0 .4rem;
+              padding-top: .12em; } /* room so the ✈️ emoji isn't clipped by tight leading */
 .hero-sub { color: var(--muted); font-size: clamp(.95rem, 2.6vw, 1.08rem); line-height: 1.5; max-width: 46ch; }
 .hero-accent { color: var(--warm); }
 /* Section labels */
