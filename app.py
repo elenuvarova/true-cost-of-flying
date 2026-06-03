@@ -210,7 +210,7 @@ def wc_bar(wc):
             'font-size:.68rem;font-weight:700;color:#fff">' + "".join(seg) + '</div>')
 
 
-st.markdown('<div class="sec">What contrails actually did for 4 famous flyers</div>', unsafe_allow_html=True)
+st.markdown('<div class="sec">What contrails actually did for 5 famous flyers</div>', unsafe_allow_html=True)
 st.markdown(
     "Burning jet fuel is the **certain** harm. Contrails are the **wildcard** — a *concentrated* effect "
     "triggered by crossing ice-supersaturated air (usually at night), **not a flat multiplier**. Six of "
@@ -235,8 +235,47 @@ for i, p in enumerate(PORTRAITS):
                         unsafe_allow_html=True)
             with st.expander("The full picture"):
                 st.markdown(p["framing"])
+
+# Drake — the clean in-domain anchor (full-width, the cleanest day/night proof in the set)
+with st.container(border=True):
+    st.markdown("**Drake** &nbsp; <span class='chip'>🧭 clean in-domain anchor</span> "
+                "<span class='chip'>☀️ day cooled ↔ 🌙 night warmed</span>", unsafe_allow_html=True)
+    st.caption("Boeing 767 · in-domain (below the cap) → the most trustworthy contrail numbers in the set")
+    d1, d2, d3 = st.columns(3)
+    d1.metric("Fuel CO₂", "277.8 t")
+    d2.metric("Contrails (GWP100)", "−8.6 t", "net cooling*", delta_color="off")
+    d3.metric("Flights with meaningful contrail", "2 of 7")
+    st.markdown(wc_bar((1, 1, 5)), unsafe_allow_html=True)
+    st.caption("1 warming · 1 cooling · 5 essentially none (3 exactly zero + 2 traces) of 7 flights")
+    st.markdown(
+        "**Same city-pair, opposite sign:** Toronto→Houston by **day** net-**cooled −10.3 t** (the ice cloud sat in "
+        "sunlight and reflected more than it trapped); the **night** return Houston→Toronto **warmed +1.6 t** — 9 days "
+        "apart, identical route. *The cleanest real-data proof that contrails are a **timing effect, not a flat fuel "
+        "surcharge**.*")
+    st.markdown("".join(f'<span class="chip">{esc(ch)}</span>' for ch in [
+        "in-domain 767 → most trustworthy (no cap flag)",
+        "~70% contrail uncertainty (this flight −8.6 to −12.5 t)",
+        "5/7 formed essentially none = power-law",
+        "*net cooling rests on one daytime leg — read as direction, not a precise ledger",
+        "fuel+contrails only (not 3× ERF)"]), unsafe_allow_html=True)
+    with st.expander("The full picture"):
+        st.markdown(
+            "Across 7 tracked flights on his Boeing 767 (N767CJ; modelled on the B763 profile), Drake's engines put "
+            "**277.8 t of CO₂** into the air — certain, and it never goes away. The contrail story is more interesting "
+            "and far more uncertain. Most legs formed almost none: three formed exactly zero, two more only a trace "
+            "(≈ +0.06 and −0.02 t), so **five of seven are essentially contrail-free** — an honest power-law finding, "
+            "not a measurement failure. Only two legs produced meaningful forcing, pointing opposite ways. The net came "
+            "out slightly **COOLING (~−8.6 t CO₂e at GWP100)**, almost entirely one flight: a daytime Toronto→Houston "
+            "leg (2024-06-09) whose ice cloud sat in full sunlight (~+9° solar elevation) and reflected more than it "
+            "trapped, netting **−10.3 t**. The mirror-image night return nine days later (Houston→Toronto, sun ~−24°) "
+            "did the opposite, **+1.6 t**. Same city-pair, opposite sign, purely because of time of day — **the cleanest "
+            "in-domain demonstration of the day/night mechanism in the set.** Treat the contrail term as "
+            "direction-plus-rough-magnitude (~70% uncertainty; this leg's range −8.6 to −12.5 t), not a precise ledger. "
+            "All 7 flights are in-domain (the 767 is below CoCiP's cap), so unlike the bizjets these numbers are **not "
+            "under-counted**. Fuel CO₂ + contrails only — omits NOx/H₂O/aerosols, and **not** the fleet ~3× ERF figure.")
 st.caption("Shown at GWP100 — a verified snapshot of the committed dataset (numbers fact-checked against the "
-           "data). Same physics, four very different contrail outcomes.")
+           "data). Same physics, five very different contrail outcomes — from Trump's +90 t night flight to Drake's "
+           "−10 t daytime one.")
 
 # ---- Flight detail: the two-number reveal (the aha) ----
 st.markdown('<div class="sec">The reveal — same flight, two numbers</div>', unsafe_allow_html=True)
