@@ -9,12 +9,25 @@ import os
 import pandas as pd
 import pydeck as pdk
 import streamlit as st
+import streamlit.components.v1 as components
 
 ROOT = os.path.dirname(__file__)
 PROC = os.path.join(ROOT, "data", "processed")
 
 st.set_page_config(page_title="True Cost of Flying", page_icon="✈️",
                    layout="centered", initial_sidebar_state="collapsed")
+
+# Optional privacy-light analytics (GoatCounter). No-op unless GOATCOUNTER_CODE is set in
+# Streamlit secrets — set it to your site code to activate. Loads in a sandboxed iframe, so
+# pageview counts are approximate (the iframe, not the parent page); see docs/DEPLOY.md.
+try:
+    _gc = st.secrets.get("GOATCOUNTER_CODE", "")
+except Exception:
+    _gc = ""
+if _gc:
+    components.html(
+        f'<script data-goatcounter="https://{_gc}.goatcounter.com/count" '
+        'async src="//gc.zgo.at/count.js"></script>', height=0)
 
 # ---- Brand styling + mobile responsiveness (single global stylesheet) ----
 # Colour language: amber = fuel CO₂, red = contrail warming, blue = contrail cooling.

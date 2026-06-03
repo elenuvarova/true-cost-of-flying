@@ -30,9 +30,9 @@ Everything in the repo is already deploy-ready:
 
 So the realistic choices, in order of effort:
 1. **Skip client analytics** and rely on the deterministic guardrail + qualitative review (right call for a zero-traffic portfolio piece — recommended).
-2. **GoatCounter via `components.html`** for a coarse hit counter (accepts the iframe-referrer caveat). Drop your GoatCounter site code into a one-line `components.html(<script data-goatcounter=...>)`; numbers will be approximate.
+2. **GoatCounter via `components.html`** for a coarse hit counter (accepts the iframe-referrer caveat) — **already wired in `app.py`**, gated behind a secret. To activate: create a free GoatCounter site, then in the Streamlit Cloud app's **Settings → Secrets** add `GOATCOUNTER_CODE = "yoursitecode"` (the `<code>` from `<code>.goatcounter.com`). With no secret set it's a no-op. Counts are approximate (iframe referrer).
 3. **Custom domain + reverse proxy** (e.g. Cloudflare) that injects the Plausible script into the served HTML — the only way to get clean parent-page pageviews, but overkill here.
 
-If you want option 2 wired up, give me your GoatCounter/Plausible site code and I'll add the `components.html` hook (≈3 lines) behind a feature flag.
+The hook is a no-op locally and on deploy until you set the secret, so it ships safely either way.
 
 > Dropped on purpose (plan §10): `st.session_state` / CSV "caveat-view" counters — Streamlit reruns make them unreliable and meaningless at this traffic.
