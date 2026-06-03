@@ -6,7 +6,7 @@
 
 Built entirely on **free** data and tools (no paid APIs, no database). A portfolio / product case study balancing product thinking with defensible climate science.
 
-**What's in the demo:** 44 real flights from 9 public-figure jets (Dec 2024 – Jan 2025), tracked via [adsb.lol](https://adsb.lol): New England Patriots, Donald Trump, Taylor Swift, Eric Schmidt, Bill Gates, Elon Musk, Kylie Jenner, Phil Knight (Nike), Mark Zuckerberg. The physics is honest, not theatrical — some daytime contrails **cool** (Musk −19 t on one flight), while a single Taylor Swift flight's contrails **more than doubled** its fuel-CO₂ warming (+105 % at GWP20). Business-jet figures above CoCiP's ~13 km calibration ceiling are flagged as under-counted, not extrapolated.
+**What's in the demo:** 84 real flights from 11 public-figure jets (2024 – early 2025), tracked via [adsb.lol](https://adsb.lol): New England Patriots, Donald Trump, Taylor Swift, Eric Schmidt, Bill Gates, Elon Musk, Kylie Jenner, Phil Knight (Nike), Mark Zuckerberg, Kim Kardashian, Drake. The physics is honest, not theatrical — some **daytime** contrails *cool* (Drake −10 t, Musk −19 t on one flight each), most flights form essentially none, while a single deep-night Trump 757 flight added **+90 t** of contrail warming (≈2.4× its fuel CO₂) and one Taylor Swift flight **more than doubled** its fuel-CO₂ warming. Contrails are a concentrated wildcard — triggered by crossing ice-supersaturated air, usually at night — not a flat multiplier. Business-jet figures above CoCiP's ~13 km calibration ceiling are flagged as under-counted, not extrapolated.
 
 ## How it works
 

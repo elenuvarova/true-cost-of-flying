@@ -164,7 +164,7 @@ for i, r in agg.iterrows():
         f'<div class="lb-ac">{esc(r["ac_type"])} · {int(r["flights"])} flights {chips}</div></div>'
         f'<div class="lb-val">{r["combined"]/1000:,.1f} t<small>{tier}</small></div></div>')
 st.markdown("".join(rows_html), unsafe_allow_html=True)
-st.caption(f"Aggregated over {len(view)} tracked Dec-2024/Jan-2025 flights for {n} owners ({horizon}). "
+st.caption(f"Aggregated over {len(view)} tracked flights (2024–early 2025) for {n} owners ({horizon}). "
            "Tiers (not a precise 1..N rank) because magnitude reshuffles with metric. Illustrative of the "
            "sampled flights, not annual.")
 
