@@ -49,9 +49,10 @@ ERA5 is read anonymously from the public ARCO bucket (no Copernicus/Google accou
 |------|------|
 | `app.py` | Deployed Streamlit app (read-only) |
 | `src/` | `tracks.py` (adsb.lol parser), `fuel.py` (OpenAP), `contrails.py` (CoCiP), `fuse.py` (CO₂e + tiers), `era5.py`, `constants.py` |
-| `batch/build_dataset.py` | Offline pipeline → static artifacts |
-| `data/processed/` | Committed leaderboard + track GeoJSON (what the app serves) |
-| `docs/` | `RESEARCH_BRIEF.md`, `IMPLEMENTATION_PLAN.md`, `JET_SHORTLIST.md`, `PHASE_*_RESULT.md`, `VALIDATION.md` |
+| `batch/build_dataset.py` | Offline pipeline → static artifacts (`build_comparators.py` = night-transatlantic validation set) |
+| `data/processed/` | Committed leaderboard + track GeoJSON + `comparators.parquet` (what the app serves) |
+| `.streamlit/config.toml` | Brand theme (dark — keeps the no-basemap map legible) |
+| `docs/` | `CASE_STUDY.md` (PM write-up), `VALIDATION.md`, `DEPLOY.md`, `RESEARCH_BRIEF.md`, `IMPLEMENTATION_PLAN.md`, `JET_SHORTLIST.md`, `PHASE_*_RESULT.md` |
 
 ## Honest caveats (built into the UI)
 

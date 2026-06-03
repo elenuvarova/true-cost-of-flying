@@ -1,0 +1,102 @@
+# True Cost of Flying — product case study
+
+*A PM + technical case study. Dual goal, equal weight: (1) a clear product narrative, (2) defensible climate science. Traces to `docs/RESEARCH_BRIEF.md` (science ground truth), `docs/IMPLEMENTATION_PLAN.md` (build plan), and `docs/VALIDATION.md` (the numbers). The live app is read-only; all physics is precomputed offline.*
+
+---
+
+## 1. Problem & user
+
+Every flight tracker and carbon calculator shows one number: **fuel CO₂**. But across aviation, CO₂ is only about **a third** of the warming — the larger share is **non-CO₂ effects, dominated by contrails** (the white lines behind jets, which spread into heat-trapping cirrus). Contrail-cirrus ERF alone (~57 mW/m²) is *larger* than aviation's CO₂ ERF (~34 mW/m²). Yet **no consumer tool counts contrails per flight.**
+
+**Primary user:** the climate-curious public, plus journalists and accountability advocates who want a credible, citable answer to *"how bad was that flight, really?"*
+**Honest secondary user (the real audience for this artifact):** a hiring manager evaluating product + technical judgment.
+
+**Job to be done:** *quickly grasp that the headline CO₂ number understates a named jet's warming — and trust the figure enough to cite or share it.* Every scope decision below is justified against that job.
+
+---
+
+## 2. Secondary demand & competitive white space
+
+There are three non-overlapping clusters, and **each half of this product already ships separately** — the moat is the *combination + framing + flight-specific physics*, not novelty of either piece (stated honestly, per the brief):
+
+| Who | What they do | What they don't |
+|---|---|---|
+| Contrails.org **Impact Explorer** | ranks individual *commercial* flights by contrail CO₂e | contrail-only; by flight/route not owner; forecast-window only |
+| Sweeney **Celebrity Jet Tracker** | ranks *owners* | CO₂-only (flat per-type table) |
+| **ATP-DEC** (Nature 2025) | fuses CO₂ + non-CO₂ into one figure | no ranking; commercial-only |
+| **Victor / 4AIR** (2025) | applies CoCiP to private jets | static annual PDF; CO₂ & contrails kept separate |
+
+**The gap:** nobody does *both* — (a) fuse fuel-CO₂ + flight-specific contrail CO₂e into one combined number, **and** (b) rank it per-owner, **for private jets**. That is the wedge.
+
+**One-line positioning:** *"Every jet tracker shows you CO₂. Across aviation, CO₂ is barely a third of the warming. Here's the same flight with its contrail warming added — computed, not guessed."*
+
+---
+
+## 3. Scope decisions — the ruthless MVP
+
+**The single aha:** *same flight, two numbers.* A user picks a tracked jet and sees Fuel CO₂ vs Combined CO₂e on one screen, with the track coloured by where the warming happened. Everything else serves that moment.
+
+Two hard constraints shaped the architecture:
+1. **CoCiP + ERA5 cannot run on a free host** (a single flight loads ~1 GB of whole-globe meteorology; Streamlit Cloud guarantees ~690 MB). → **Split the system in two:** a heavy *offline batch* precomputes everything into small static files; the *deployed app is read-only* (`pd.read_parquet` + render, zero physics, zero API keys). This is the binding decision the whole project rests on.
+2. **Attribution + licensing are the real risks, not the physics.** → public-figure, corroborated tails only; aircraft-not-people framing; tracks from adsb.lol (ODbL-1.0, attributed), zero live calls.
+
+**What I cut, and why (the discipline is the point):**
+
+| Cut | Why |
+|---|---|
+| GWP* and 500-yr from the metric toggle | GWP* is a *flow/rate* metric — using it as a per-flight *stock* number would be scientifically wrong. Kept GWP100 + GWP20 only. |
+| 20–40 flights → started at ~10–12 | A small *verified* set beats a large noisy one given attribution + power-law + heavy offline cost. (Grew to 44 once the batch was cheap and cached.) |
+| 3D extrusion / camera animation | The aha is the two numbers; a flat coloured path delivers it. Don't let viz fiddliness block the point. |
+| A spurious 1..N rank | Magnitude reshuffles with the metric, so the leaderboard uses **tiers** (high/med/low) — leaning on the brief's finding that the binary "does this matter" verdict is ~90% robust across metrics even when the magnitude isn't. |
+| NOx / H₂O / aerosols | Out of MVP scope; their absence is **disclosed on-screen** so the per-flight number is never implied to be the full ~3×. |
+
+---
+
+## 4. The solution
+
+**Three surfaces, one page:**
+1. **Tiered leaderboard** — owners ranked by combined warming, with visible confidence chips (proxy-type, above-CoCiP-cap).
+2. **The reveal** — pick a flight → Fuel CO₂ vs Combined CO₂e, a proportion bar showing the red "contrail" slice no tracker counts, the **+X%** uplift, a **GWP100/GWP20 toggle** whose motion *is* the teaching moment, and an uncertainty band.
+3. **The flight-track map** — coloured per segment by where contrail warming actually occurred (red) vs none (grey) vs cooling (blue), because the warming is concentrated where the jet crossed humid, icy air.
+
+The honest framing is enforced everywhere: the combined number is **fuel-CO₂ + contrails only** (≈1.3–1.6× fuel at GWP100), never dressed up as the aviation-wide ~3× (which includes NOx/H₂O/aerosols). See `docs/IMPLEMENTATION_PLAN.md` §6 for the framing rule.
+
+**Stack:** offline batch in Python (adsb.lol tracks → OpenAP fuel → ERA5/ARCO + pycontrails CoCiP → fuse + GWP + tiers) → committed Parquet/GeoJSON (<1 MB) → read-only Streamlit app on free hosting. No database, no paid APIs.
+
+---
+
+## 5. Validation & where we diverge (the differentiating section)
+
+Replacing a flat ~3× multiplier with an opaque model invites the obvious objection: *"why trust it?"* So I checked it against published science — and the model **reproduces results it was never fit to** (full detail + reproducible code in `docs/VALIDATION.md`):
+
+- **Formation incidence:** 32% of our flights form a persistent contrail / 16% net-warming — vs Teoh 2024's fleet ~24% / ~14%.
+- **The power-law:** a *single* track segment often carries ~all of a flight's energy forcing — Teoh's "2.7% of flights = 80% of forcing" at per-flight scale. (This is *why* the product ships tiers, not a precise rank.)
+- **Day vs night controls the sign:** night contrails warm (100% of night waypoints in our data); many daytime contrails cool. **Night transatlantic widebodies aggregate +57% contrail/fuel; daytime private jets ~0% — same pipeline, ~20× swing from regime alone** (Stuber 2006, reproduced).
+- **The EF→CO₂e conversion** matches Contrails.org's own published factor to **0.8%** (independently derived from IPCC AGWP100).
+
+**Where we diverge, named and signed:** the daytime private-jet aggregate sits *below* the fleet 33–63% band — because daytime cooling cancels night warming, the ~13 km business-jet altitude cap under-counts, and ERA5's upper-troposphere dry bias suppresses contrails. **Every bias pushes the same direction — down — so the tool errs toward *under*-stating**, the conservative direction for an accountability claim. That's the strongest thing you can say about a soft number: you know which way it's wrong.
+
+---
+
+## 6. Metrics
+
+Honest context: this is a zero-traffic portfolio prototype with no accounts, so the *primary* signal is **qualitative** — does a reviewer reach the two-number reveal, toggle the metric, see the band, and trust the figure because the validation section shows it agrees with published science?
+
+- **North-Star (how I'd instrument at scale):** *"reveal reached"* — flight-detail views per session.
+- **Input metrics:** leaderboard→detail click-through; GWP100/GWP20 toggle clicks (engagement with the nuance).
+- **Guardrail (computed deterministically from the committed data, surfaced in-UI):** % of flights flagged low-confidence (proxy-type / above-cap). *Surfacing data-quality honestly is itself a product decision* — a rising number is a signal to show, not hide.
+
+---
+
+## 7. Honest learnings & what's next
+
+**What the build taught me (the parts worth hiring for):**
+- **The riskiest thing first.** A physics spike (one real flight, validated against a comparator) ran in week one — before any UI — so the novel risk was retired early, not discovered late.
+- **The pipeline had a silent bug only adversarial data exposed.** Built for private jets, the type-resolver defaulted *unknown wide-bodies to a business-jet proxy* — fine until I ran commercial 777/A350 comparators and got absurd 800% ratios. Fixing it (wide-body proxies; re-running CoCiP, not just fuel) moved a contrail estimate 229→193 t — proof the *aircraft model*, not just the fuel, matters. Validation isn't a checkbox; it finds real defects.
+- **Honest framing is a feature.** Keeping the per-flight number (~1.5×) strictly separate from the aviation-wide context number (~3×), and disclosing the omitted terms, is what makes it citable rather than dismissible.
+
+**Where the science is thin (and disclosed):** business-jet altitude cap → under-counting; contrail ERF ~70% uncertainty + the efficacy spread; magnitude is metric-dependent (the verdict isn't); we omit NOx/H₂O/aerosols.
+
+**What's next:** add NOx (via OpenAP emission indices) so a *legitimate* per-flight number can approach ~3×; fold the night-transatlantic comparators into the main view; a live single-flight drill-down on a 16 GB host; broaden the verified jet set. The clearest next dataset lever isn't season (winter already favours contrails) — it's **time-of-day + route**: night crossings of busy ISSR corridors.
+
+**The bar for this artifact:** *a reviewer reaches the two-number reveal, understands that contrails add ~30–60% at GWP100 (and why the aviation-wide figure is ~3×), sees the uncertainty, and trusts the number because the validation section shows it agrees with a published comparator.*

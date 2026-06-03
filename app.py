@@ -1,6 +1,6 @@
 """True Cost of Flying — deployed app (READ-ONLY).
 
-Reads committed data/processed/{leaderboard.parquet, tracks/*.geojson}.
+Reads committed data/processed/{leaderboard.parquet, tracks/*.geojson, comparators.parquet}.
 NO pycontrails / ERA5 / live API here — all physics is precomputed offline (see batch/).
 """
 import json
@@ -13,7 +13,56 @@ import streamlit as st
 ROOT = os.path.dirname(__file__)
 PROC = os.path.join(ROOT, "data", "processed")
 
-st.set_page_config(page_title="True Cost of Flying", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="True Cost of Flying", page_icon="✈️",
+                   layout="centered", initial_sidebar_state="collapsed")
+
+# ---- Brand styling + mobile responsiveness (single global stylesheet) ----
+# Colour language: amber = fuel CO₂, red = contrail warming, blue = contrail cooling.
+FUEL, WARM, COOL = "#d9994e", "#e2503a", "#4e8fd6"
+st.markdown("""
+<style>
+:root { --fuel:#d9994e; --warm:#e2503a; --cool:#4e8fd6; --ink:#e8eef5; --muted:#9bb0c4; }
+/* Comfortable reading column; tighter gutters on phones */
+.block-container { max-width: 880px; padding-top: 2.2rem; padding-bottom: 4rem; }
+@media (max-width: 640px){ .block-container { padding-left: .9rem; padding-right: .9rem; padding-top: 1.2rem; } }
+#MainMenu, footer, .stDeployButton { visibility: hidden; }
+/* Hero */
+.hero-title { font-size: clamp(1.9rem, 7vw, 3rem); font-weight: 800; line-height: 1.05; margin: 0 0 .4rem; }
+.hero-sub { color: var(--muted); font-size: clamp(.95rem, 2.6vw, 1.08rem); line-height: 1.5; max-width: 46ch; }
+.hero-accent { color: var(--warm); }
+/* Section labels */
+.sec { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+       margin: 2.2rem 0 .6rem; font-weight: 700; }
+/* Leaderboard */
+.lb-row { display: grid; grid-template-columns: 2.3rem 1fr auto; gap: .55rem .8rem; align-items: center;
+          padding: .7rem .85rem; border-radius: 12px; background: #13243a; margin-bottom: .5rem;
+          border: 1px solid #1e3552; }
+.lb-rank { font-size: 1.15rem; font-weight: 800; text-align: center; color: var(--muted); }
+.lb-name { font-weight: 700; font-size: 1.02rem; }
+.lb-ac { color: var(--muted); font-size: .82rem; }
+.lb-val { text-align: right; font-weight: 800; font-size: 1.12rem; white-space: nowrap; }
+.lb-val small { display:block; font-weight:600; font-size:.7rem; color:var(--muted); }
+.chip { display:inline-block; font-size:.68rem; padding:.08rem .45rem; border-radius:999px;
+        background:#24344d; color:#c7d6e6; margin:.18rem .25rem 0 0; white-space:nowrap; }
+.tier-dot { font-size:.7rem; font-weight:700; }
+/* Reveal */
+.reveal { background:#13243a; border:1px solid #1e3552; border-radius:16px; padding:1.1rem 1.2rem; }
+.reveal-nums { display:flex; flex-wrap:wrap; gap:1rem 2rem; }
+.stat { flex:1 1 9rem; }
+.stat .lbl { color:var(--muted); font-size:.82rem; margin-bottom:.15rem; }
+.stat .num { font-size: clamp(1.7rem, 7vw, 2.6rem); font-weight:800; line-height:1; }
+.stat .num small { font-size:.9rem; font-weight:600; color:var(--muted); }
+.delta-pill { display:inline-block; margin-top:.4rem; padding:.15rem .6rem; border-radius:999px;
+              font-weight:800; font-size:.95rem; background:rgba(226,80,58,.16); color:#ff8b73; }
+.delta-cool { background:rgba(78,143,214,.16); color:#8fc0f5; }
+.bar { display:flex; height:30px; border-radius:8px; overflow:hidden; margin:1rem 0 .4rem; background:#0b1622; }
+.bar span { display:flex; align-items:center; padding:0 .5rem; font-size:.74rem; font-weight:700; color:#0b1622;
+            white-space:nowrap; overflow:hidden; }
+.bar .b-fuel { background:var(--fuel); }
+.bar .b-warm { background:var(--warm); color:#fff; }
+.barcap { color:var(--muted); font-size:.78rem; }
+</style>
+""", unsafe_allow_html=True)
 
 
 @st.cache_data
@@ -38,23 +87,35 @@ def t(kg):
     return f"{kg/1000:,.1f} t"
 
 
+def esc(s):
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 df = load_board()
 
-st.title("✈️ True Cost of Flying")
-st.caption("Every jet tracker shows you CO₂. Across aviation, CO₂ is only about a third of the warming. "
-           "Here is the *same flight* with its contrail warming added — computed with CoCiP physics, not guessed.")
+# ---- Hero ----
+st.markdown(
+    '<div class="hero-title">✈️ True Cost of Flying</div>'
+    '<p class="hero-sub">Every jet tracker shows you CO₂. Across aviation, CO₂ is only about '
+    '<span class="hero-accent">a third</span> of the warming. Here is the <em>same flight</em> with its '
+    'contrail warming added — computed with CoCiP physics, not guessed.</p>',
+    unsafe_allow_html=True)
 
-# ---- Sidebar: metric toggle ----
-horizon = st.sidebar.radio("Time horizon (GWP)", ["GWP100", "GWP20"], index=0,
-                           help="Magnitude is metric-dependent; the 'does this matter' verdict is ~90% robust "
-                                "across metrics. GWP100 is the default; GWP20 weights short-lived contrails more.")
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Data**: [adsb.lol](https://adsb.lol) tracks (ODbL-1.0) · ERA5 · OpenAP · "
-                    "[pycontrails](https://py.contrails.org) CoCiP. Non-commercial / educational.")
+# ---- Time-horizon toggle (in the main flow so it is reachable on mobile, where the sidebar is hidden) ----
+horizon = st.radio("Time horizon", ["GWP100", "GWP20"], index=0, horizontal=True,
+                   help="Magnitude is metric-dependent; the 'does this matter' verdict is ~90% robust across "
+                        "metrics. GWP100 (100-year) is the default; GWP20 weights short-lived contrails more.")
+st.caption("GWP100 = standard 100-year basis · GWP20 = 20-year (weights contrails heavier). "
+           "Toggling moves the contrail number — that motion *is* the point.")
+
+st.sidebar.markdown("**True Cost of Flying**")
+st.sidebar.markdown("Data: [adsb.lol](https://adsb.lol) tracks (ODbL-1.0) · ECMWF ERA5 · "
+                    "[OpenAP](https://openap.dev) · [pycontrails](https://py.contrails.org) CoCiP.")
+st.sidebar.caption("Non-commercial / educational. Aircraft, not people — see caveats.")
 
 
-def contrail_for(row, horizon):
-    return row["contrail_co2e_gwp20_central"] if horizon == "GWP20" else row["contrail_co2e_central"]
+def contrail_for(row, h):
+    return row["contrail_co2e_gwp20_central"] if h == "GWP20" else row["contrail_co2e_central"]
 
 
 view = df.copy()
@@ -65,54 +126,70 @@ view["date"] = view["flight_id"].str.split("_").str[-1].str.replace(
 view = view.sort_values("combined", ascending=False)
 
 # ---- Owner leaderboard (aggregated across each owner's tracked flights) ----
-st.subheader("Leaderboard — who warmed the most (fuel CO₂ + contrails)")
+st.markdown('<div class="sec">Leaderboard — who warmed the most (fuel CO₂ + contrails)</div>',
+            unsafe_allow_html=True)
 agg = (view.groupby("owner_label")
        .agg(combined=("combined", "sum"), flights=("combined", "size"),
             ac_type=("ac_type", "first"),
             proxy=("proxy_type_flag", "any"), bizjet=("bizjet_alt_flag", "any"))
-       .reset_index().sort_values("combined", ascending=False))
+       .reset_index().sort_values("combined", ascending=False).reset_index(drop=True))
 n = len(agg)
-for i, (_, r) in enumerate(agg.iterrows()):
-    tier = "🔴 High" if i < n / 3 else ("🟢 Low" if i >= 2 * n / 3 else "🟠 Medium")
-    flags = []
+rows_html = []
+for i, r in agg.iterrows():
+    tier = ('<span class="tier-dot" style="color:#e2503a">🔴 High</span>' if i < n / 3
+            else '<span class="tier-dot" style="color:#3fae6b">🟢 Low</span>' if i >= 2 * n / 3
+            else '<span class="tier-dot" style="color:#e0a23a">🟠 Med</span>')
+    chips = ""
     if r["proxy"]:
-        flags.append("⚠️ proxy type")
+        chips += '<span class="chip">⚠ proxy type</span>'
     if r["bizjet"]:
-        flags.append("⚠️ above CoCiP cap → under-counted")
-    c1, c2, c3, c4 = st.columns([3, 2, 2, 3])
-    c1.markdown(f"**{r['owner_label']}**  \n{r['ac_type']}")
-    c2.metric(f"Total CO₂e ({int(r['flights'])} flights)", t(r["combined"]))
-    c3.markdown(f"### {tier}")
-    c4.markdown((" · ".join(flags)) if flags else "")
-st.caption(f"Aggregated over {len(view)} tracked December-2024 flights for {n} owners. "
-           "Totals are illustrative of the sampled flights, not annual.")
+        chips += '<span class="chip">⚠ above cap · under-counted</span>'
+    rows_html.append(
+        f'<div class="lb-row"><div class="lb-rank">{i+1}</div>'
+        f'<div><div class="lb-name">{esc(r["owner_label"])}</div>'
+        f'<div class="lb-ac">{esc(r["ac_type"])} · {int(r["flights"])} flights {chips}</div></div>'
+        f'<div class="lb-val">{r["combined"]/1000:,.1f} t<small>{tier}</small></div></div>')
+st.markdown("".join(rows_html), unsafe_allow_html=True)
+st.caption(f"Aggregated over {len(view)} tracked Dec-2024/Jan-2025 flights for {n} owners ({horizon}). "
+           "Tiers (not a precise 1..N rank) because magnitude reshuffles with metric. Illustrative of the "
+           "sampled flights, not annual.")
 
-st.markdown("---")
-
-# ---- Flight detail: the two-number reveal ----
-st.subheader("Flight detail — the same flight, two numbers")
+# ---- Flight detail: the two-number reveal (the aha) ----
+st.markdown('<div class="sec">The reveal — same flight, two numbers</div>', unsafe_allow_html=True)
 view["flabel"] = (view["owner_label"] + " · " + view["date"] + " · "
                   + (view["combined"] / 1000).round(1).astype(str) + " t")
-choice = st.selectbox("Pick a flight", view["flabel"].tolist())
+choice = st.selectbox("Pick a tracked flight", view["flabel"].tolist(), label_visibility="collapsed")
 row = view[view["flabel"] == choice].iloc[0]
 contrail = contrail_for(row, horizon)
-combined = row["fuel_co2_kg"] + contrail
-lo = row["fuel_co2_kg"] + row["contrail_co2e_low"]
-hi = row["fuel_co2_kg"] + row["contrail_co2e_high"]
+fuel = row["fuel_co2_kg"]
+combined = fuel + contrail
+lo = fuel + row["contrail_co2e_low"]
+hi = fuel + row["contrail_co2e_high"]
+pct = 100 * contrail / fuel if fuel else 0
 
-a, b = st.columns(2)
-a.metric("Fuel CO₂ (what every tracker shows)", t(row["fuel_co2_kg"]))
-pct = f"+{100*contrail/row['fuel_co2_kg']:.0f}%" if row["fuel_co2_kg"] else None
-b.metric("Combined CO₂e (fuel + contrails)", t(combined), pct,
-         help=f"{horizon}. Uncertainty band {t(lo)}–{t(hi)} (GWP100). Contrail term carries ~70% uncertainty.")
-
-if contrail <= 0:
-    st.info("This flight formed **no net-warming contrail** in the model — not every flight is an offender. "
-            + ("(It also cruised above CoCiP's ~13 km calibration ceiling, so any contrail is under-counted.)"
-               if row["bizjet_alt_flag"] else ""))
+if contrail > 0:
+    fuel_w = 100 * fuel / combined
+    bar = (f'<div class="bar"><span class="b-fuel" style="width:{fuel_w:.0f}%">Fuel {fuel/1000:,.0f} t</span>'
+           f'<span class="b-warm" style="width:{100-fuel_w:.0f}%">+{contrail/1000:,.0f} t contrails</span></div>'
+           f'<div class="barcap">The red slice is the warming no other tracker counts.</div>')
+    delta = f'<span class="delta-pill">contrails add +{pct:.0f}%</span>'
+    combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
 else:
-    st.markdown(f"**Contrails add {t(contrail)} of CO₂-equivalent warming** on top of the fuel CO₂ — "
-                f"the part no other tracker shows.")
+    bar = ('<div class="bar"><span class="b-fuel" style="width:100%">Fuel '
+           f'{fuel/1000:,.0f} t — no net-warming contrail</span></div>')
+    delta = f'<span class="delta-pill delta-cool">contrails net {pct:+.0f}% (cooling / none)</span>'
+    combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
+
+st.markdown(
+    f'<div class="reveal"><div class="reveal-nums">'
+    f'<div class="stat"><div class="lbl">Fuel CO₂ — what every tracker shows</div>'
+    f'<div class="num">{fuel/1000:,.1f} <small>t</small></div></div>'
+    f'<div class="stat"><div class="lbl">Combined CO₂e — fuel + contrails</div>'
+    f'<div class="num">{combined_val}</div>{delta}</div>'
+    f'</div>{bar}</div>',
+    unsafe_allow_html=True)
+st.caption(f"{horizon} · uncertainty band {t(lo)}–{t(hi)} · contrail term carries ~70% uncertainty (IPCC "
+           f"'low confidence'). " + ("Above CoCiP's ~13 km cap → likely under-counted." if row["bizjet_alt_flag"] else ""))
 
 # ---- Map ----
 gj = load_track(row["flight_id"])
@@ -121,7 +198,6 @@ if gj and gj["features"]:
     for f in gj["features"]:
         c = f["geometry"]["coordinates"]
         s = f["properties"].get("ef_share", 0.0)
-        # warming = red, neutral = grey, cooling = blue
         color = ([220, 60, 40] if s > 0.05 else [80, 110, 200] if s < -0.05 else [130, 130, 140])
         segs.append({"path": [[c[0][0], c[0][1]], [c[1][0], c[1][1]]], "color": color})
     sd = pd.DataFrame(segs)
@@ -129,33 +205,33 @@ if gj and gj["features"]:
     lats = [pt[1] for seg in sd["path"] for pt in seg]
     center_lon, center_lat = sum(lons) / len(lons), sum(lats) / len(lats)
     layer = pdk.Layer("PathLayer", sd, get_path="path", get_color="color", width_min_pixels=4)
-    # No external basemap: layers render on the dark page background. Avoids the
+    # No external basemap: layers render on the dark theme background. Avoids the
     # Carto/Mapbox tile dependency that was blanking the whole canvas.
     st.pydeck_chart(pdk.Deck(
         layers=[layer],
         initial_view_state=pdk.ViewState(latitude=center_lat, longitude=center_lon, zoom=4, pitch=30),
         map_provider=None, map_style=None,
-        tooltip={"text": "red = contrail warming along this segment"}), height=460)
-    st.caption("Track coloured by where contrail warming occurred (red) vs none (grey). "
+        tooltip={"text": "red = contrail warming along this segment"}), height=420)
+    st.caption("Track coloured by where contrail warming occurred (🔴 red) vs none (grey) vs cooling (🔵 blue). "
                "Fuel CO₂ is roughly uniform; contrail warming is concentrated where the jet crossed humid, icy air.")
 
 # ---- Night transatlantic widebodies: the regime where contrails dominate ----
 comp = load_comparators()
 if comp is not None and len(comp):
-    st.markdown("---")
-    st.subheader("🌙 The other extreme: night transatlantic widebodies")
+    st.markdown('<div class="sec">🌙 The other extreme — night transatlantic widebodies</div>',
+                unsafe_allow_html=True)
     st.markdown(
-        "The jets above mostly fly **short daytime US/EU legs** — and daytime contrails often *cool*, so on "
-        "aggregate contrails add almost nothing. Run the **same physics** on **night North-Atlantic widebody** "
-        "crossings (the busy contrail corridor, in the dark) and it flips entirely:")
+        "The jets above mostly fly **short daytime US/EU legs**, where daytime contrails often *cool* — so on "
+        "aggregate they add almost nothing. Run the **same physics** on **night North-Atlantic widebody** "
+        "crossings (the busy contrail corridor, in the dark) and it flips:")
     pct_col = "contrail_pct_of_fuel_gwp20" if horizon == "GWP20" else "contrail_pct_of_fuel"
     cc_col = "contrail_co2e_gwp20_central" if horizon == "GWP20" else "contrail_co2e_central"
-    agg = 100 * comp[cc_col].sum() / comp["fuel_co2_kg"].sum()
-    m1, m2 = st.columns([2, 3])
-    m1.metric(f"Contrails add — aggregate of {len(comp)} night crossings ({horizon})", f"+{agg:.0f}%",
-              help="vs roughly 0% on the daytime private jets above — identical pipeline, opposite regime.")
-    m2.markdown("&nbsp;  \nEvery one formed its contrail **at night → 100% warming**, all at in-domain "
-                "cruise altitude. **Time-of-day and route — not the model — drive the difference.**")
+    aggc = 100 * comp[cc_col].sum() / comp["fuel_co2_kg"].sum()
+    cobj, ctxt = st.columns([1, 1])
+    cobj.metric(f"Contrails add — aggregate ({horizon})", f"+{aggc:.0f}%",
+                help="vs roughly 0% on the daytime private jets above — identical pipeline, opposite regime.")
+    ctxt.markdown(f"across **{len(comp)} night crossings**. Every one formed its contrail **at night → "
+                  "100% warming**, all at in-domain altitude. **Time-of-day + route, not the model, drive it.**")
     tbl = pd.DataFrame({
         "Flight": comp["registration"].astype(str) + " (" + comp["adsb_type"].astype(str) + ")",
         "Fuel CO₂": (comp["fuel_co2_kg"] / 1000).round().astype(int).astype(str) + " t",
@@ -164,9 +240,9 @@ if comp is not None and len(comp):
     })
     st.dataframe(tbl, hide_index=True, use_container_width=True)
     st.caption("Commercial comparators (not ranked in the leaderboard). 2 of 5 use a wide-body proxy fuel type "
-               "(elevated fuel-CO₂ uncertainty); contrail term carries ~70% uncertainty. "
-               "Impact Explorer can't be queried for these historical flights (it is forecast-only), but our "
-               "EF→CO₂e conversion matches Contrails.org's published factor to 0.8%. See `docs/VALIDATION.md` §4, §7.")
+               "(elevated fuel-CO₂ uncertainty); contrail term carries ~70% uncertainty. Impact Explorer can't be "
+               "queried for historical flights (it is forecast-only), but our EF→CO₂e conversion matches "
+               "Contrails.org's published factor to 0.8%. See `docs/VALIDATION.md` §4, §7.")
 
 # ---- Mandatory caveats (IMPLEMENTATION_PLAN §11) ----
 with st.expander("How this is computed & honest caveats"):
@@ -203,9 +279,17 @@ with st.expander("Validation — does this agree with published science?"):
         f"show *tiers*, not a precise 1..N rank. ✅\n"
         f"- **Per-flight ratio when ISSR is crossed in-domain:** reaches **+{peak:.0f}%** here (and 40–52% in the "
         f"Phase 0.5 optimal-altitude case) — the lower-to-middle of the published **33–63% (GWP100)** band. ✅\n"
-        f"- **Where we diverge (honestly):** the *sample aggregate* is far below the fleet 33–63% — these short "
-        f"winter US/EU legs largely missed the heavily-trafficked ISSR corridors that dominate the fleet figure, and "
-        f"about half the forming flights *cool*. The biases (ERA5 dry bias, the ~13 km bizjet cap) push our numbers "
-        f"**down**, so the tool errs toward *under*-stating. A flight-matched cross-check vs Contrails.org Impact "
-        f"Explorer needs a commercial comparator — an open gap. ⚠️\n\n"
+        f"- **Day vs night drives the sign:** night contrails warm (100% in our data), many daytime contrails cool. "
+        f"Night transatlantic widebodies aggregate **+57%** vs ~0% for daytime private jets — same pipeline. ✅\n"
+        f"- **Where we diverge (honestly):** the daytime private-jet *aggregate* sits far below the fleet 33–63% "
+        f"because daytime cooling cancels night warming and the ~13 km bizjet cap + ERA5 dry bias push our numbers "
+        f"**down** — so the tool errs toward *under*-stating. \n\n"
         f"Full write-up: `docs/VALIDATION.md`.")
+
+# ---- Data-quality guardrail (deterministic from the committed data; surfaced, not hidden) ----
+flagged = df[df["proxy_type_flag"] | df["bizjet_alt_flag"] | df["coverage_gap_flag"]]
+st.divider()
+st.caption(
+    f"📊 Data-quality guardrail: **{len(flagged)}/{len(df)} ({100*len(flagged)/len(df):.0f}%)** of leaderboard "
+    f"flights carry a low-confidence flag (proxy aircraft type, above the CoCiP altitude cap, or a coverage gap). "
+    "We surface this rather than hide it — a rising number is a signal, not something to bury.")
