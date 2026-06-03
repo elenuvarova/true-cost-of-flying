@@ -22,6 +22,14 @@ TYPE_MAP = {
     "B762": ("B763", "synonym"), "B763": ("B763", "native"), "B752": ("B752", "native"),
     "B738": ("B738", "native"), "BBJ2": ("B738", "synonym"), "A319": ("A319", "native"),
     "B77W": ("B77W", "native"), "B789": ("B789", "native"), "DH8D": ("C550", "project_proxy"),
+    # wide-body airliners OpenAP lacks natively -> nearest native wide-body.
+    # WITHOUT these they fall to DEFAULT_PROXY=GLF6 (a business jet), which under-counts
+    # a wide-body's fuel ~6x AND runs CoCiP with bizjet (GLF5) emissions -> garbage ratio.
+    "B772": ("B77W", "project_proxy"), "B77L": ("B77W", "project_proxy"),
+    "A35K": ("B77W", "project_proxy"), "A359": ("B789", "project_proxy"),
+    "A333": ("B763", "project_proxy"), "A332": ("B763", "project_proxy"),
+    "A343": ("B77W", "project_proxy"), "A346": ("B77W", "project_proxy"),
+    "B788": ("B789", "synonym"), "B78X": ("B789", "project_proxy"),
 }
 DEFAULT_PROXY = ("GLF6", "default_proxy")
 

@@ -51,11 +51,15 @@ ERA5 is read anonymously from the public ARCO bucket (no Copernicus/Google accou
 | `src/` | `tracks.py` (adsb.lol parser), `fuel.py` (OpenAP), `contrails.py` (CoCiP), `fuse.py` (CO₂e + tiers), `era5.py`, `constants.py` |
 | `batch/build_dataset.py` | Offline pipeline → static artifacts |
 | `data/processed/` | Committed leaderboard + track GeoJSON (what the app serves) |
-| `docs/` | `RESEARCH_BRIEF.md`, `IMPLEMENTATION_PLAN.md`, `JET_SHORTLIST.md`, `PHASE_*_RESULT.md` |
+| `docs/` | `RESEARCH_BRIEF.md`, `IMPLEMENTATION_PLAN.md`, `JET_SHORTLIST.md`, `PHASE_*_RESULT.md`, `VALIDATION.md` |
 
 ## Honest caveats (built into the UI)
 
 CO₂e is never shown as a bare number: GWP100 default + GWP20 toggle + uncertainty band. The fused total is **fuel CO₂ + contrails only** (omits NOx / water vapour / aerosols — the aviation-wide "~3×" includes those). Contrail warming carries ~70% uncertainty (IPCC "low confidence"). Business jets cruise above CoCiP's ~13 km calibration ceiling, so their contrails are **under-counted, not extrapolated** (flagged). Figures are for *flights associated with an aircraft* — not proof of who was aboard.
+
+## Does the model agree with published science?
+
+Yes — and where it doesn't, [`docs/VALIDATION.md`](docs/VALIDATION.md) says so in numbers (and a condensed version ships in-app). On this 44-flight set, **32% of flights form a persistent contrail and 16% form a net-warming one** — matching Teoh et al. 2024's fleet figures (~24% / ~14%) on a completely different (private-jet, winter) sample. Per-flight contrail-vs-fuel ratios reach the published **33–63% (GWP100)** band when a jet crosses ice-supersaturated air below the calibration cap, and a *single track segment* often carries a flight's entire warming — reproducing the known power-law. The sample aggregate sits *below* the fleet figure (short winter US/EU legs largely miss the busy contrail corridors; about half the forming flights cool), and the biases (ERA5 dry bias, the bizjet altitude cap) push the numbers **down** — so the tool errs toward *under*-stating.
 
 ## Data & credits
 

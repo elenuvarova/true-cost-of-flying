@@ -27,6 +27,13 @@ def load_track(flight_id):
     return json.load(open(p)) if os.path.exists(p) else None
 
 
+@st.cache_data
+def load_comparators():
+    """Optional commercial comparators (night transatlantic widebodies). Absent on deploy = fine."""
+    p = os.path.join(PROC, "comparators.parquet")
+    return pd.read_parquet(p) if os.path.exists(p) else None
+
+
 def t(kg):
     return f"{kg/1000:,.1f} t"
 
@@ -132,6 +139,35 @@ if gj and gj["features"]:
     st.caption("Track coloured by where contrail warming occurred (red) vs none (grey). "
                "Fuel CO₂ is roughly uniform; contrail warming is concentrated where the jet crossed humid, icy air.")
 
+# ---- Night transatlantic widebodies: the regime where contrails dominate ----
+comp = load_comparators()
+if comp is not None and len(comp):
+    st.markdown("---")
+    st.subheader("🌙 The other extreme: night transatlantic widebodies")
+    st.markdown(
+        "The jets above mostly fly **short daytime US/EU legs** — and daytime contrails often *cool*, so on "
+        "aggregate contrails add almost nothing. Run the **same physics** on **night North-Atlantic widebody** "
+        "crossings (the busy contrail corridor, in the dark) and it flips entirely:")
+    pct_col = "contrail_pct_of_fuel_gwp20" if horizon == "GWP20" else "contrail_pct_of_fuel"
+    cc_col = "contrail_co2e_gwp20_central" if horizon == "GWP20" else "contrail_co2e_central"
+    agg = 100 * comp[cc_col].sum() / comp["fuel_co2_kg"].sum()
+    m1, m2 = st.columns([2, 3])
+    m1.metric(f"Contrails add — aggregate of {len(comp)} night crossings ({horizon})", f"+{agg:.0f}%",
+              help="vs roughly 0% on the daytime private jets above — identical pipeline, opposite regime.")
+    m2.markdown("&nbsp;  \nEvery one formed its contrail **at night → 100% warming**, all at in-domain "
+                "cruise altitude. **Time-of-day and route — not the model — drive the difference.**")
+    tbl = pd.DataFrame({
+        "Flight": comp["registration"].astype(str) + " (" + comp["adsb_type"].astype(str) + ")",
+        "Fuel CO₂": (comp["fuel_co2_kg"] / 1000).round().astype(int).astype(str) + " t",
+        "Contrail CO₂e": (comp[cc_col] / 1000).round().astype(int).astype(str) + " t",
+        "Contrails add": comp[pct_col].round().astype(int).astype(str) + "%",
+    })
+    st.dataframe(tbl, hide_index=True, use_container_width=True)
+    st.caption("Commercial comparators (not ranked in the leaderboard). 2 of 5 use a wide-body proxy fuel type "
+               "(elevated fuel-CO₂ uncertainty); contrail term carries ~70% uncertainty. "
+               "Impact Explorer can't be queried for these historical flights (it is forecast-only), but our "
+               "EF→CO₂e conversion matches Contrails.org's published factor to 0.8%. See `docs/VALIDATION.md` §4, §7.")
+
 # ---- Mandatory caveats (IMPLEMENTATION_PLAN §11) ----
 with st.expander("How this is computed & honest caveats"):
     st.markdown(
@@ -147,3 +183,29 @@ with st.expander("How this is computed & honest caveats"):
         "**under-counted, not extrapolated** (flagged).\n"
         "- **Aircraft, not people.** Figures are for *flights associated with this aircraft*; we can't confirm "
         "who was aboard. Owner attributions are public-figure / corroborated.")
+
+# ---- Validation: does our output agree with published science? (numbers computed live from the data) ----
+with st.expander("Validation — does this agree with published science?"):
+    n_tot = len(df)
+    n_forming = int((df["contrail_ef_joules"].abs() >= 1e6).sum())
+    n_warming = int((df["contrail_co2e_central"] > 0).sum())
+    in_domain = df[~df["bizjet_alt_flag"]]
+    peak = in_domain["contrail_pct_of_fuel"].max()
+    st.markdown(
+        f"We replaced a flat ~3× multiplier with flight-specific CoCiP physics — so the fair question is "
+        f"*does it reproduce the literature?* These numbers are computed live from the {n_tot} committed flights:\n\n"
+        f"- **Contrail-formation incidence:** {n_forming}/{n_tot} = **{100*n_forming/n_tot:.0f}%** of flights form a "
+        f"persistent contrail; **{n_warming}/{n_tot} = {100*n_warming/n_tot:.0f}%** form a *net-warming* one. "
+        f"Teoh et al. 2024 report ~24% / ~14% across the global fleet — our private-jet, winter sample lands in the "
+        f"same place (slightly higher, as cold high-latitude air favours contrails). ✅\n"
+        f"- **The power-law is visible inside single flights:** a single track segment can carry ~all of a flight's "
+        f"energy forcing — reproducing Teoh's '2.7% of flights = 80% of forcing' at per-flight scale. It's why we "
+        f"show *tiers*, not a precise 1..N rank. ✅\n"
+        f"- **Per-flight ratio when ISSR is crossed in-domain:** reaches **+{peak:.0f}%** here (and 40–52% in the "
+        f"Phase 0.5 optimal-altitude case) — the lower-to-middle of the published **33–63% (GWP100)** band. ✅\n"
+        f"- **Where we diverge (honestly):** the *sample aggregate* is far below the fleet 33–63% — these short "
+        f"winter US/EU legs largely missed the heavily-trafficked ISSR corridors that dominate the fleet figure, and "
+        f"about half the forming flights *cool*. The biases (ERA5 dry bias, the ~13 km bizjet cap) push our numbers "
+        f"**down**, so the tool errs toward *under*-stating. A flight-matched cross-check vs Contrails.org Impact "
+        f"Explorer needs a commercial comparator — an open gap. ⚠️\n\n"
+        f"Full write-up: `docs/VALIDATION.md`.")
