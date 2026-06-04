@@ -39,19 +39,27 @@ def export_parquet(name):
 
 
 n_lb = export_parquet("leaderboard.parquet")
-n_cmp = export_parquet("comparators.parquet")
 
-# Copy per-flight track geojson verbatim (already carries ef / ef_share per segment).
+# Per-flight track geojson, slimmed for the web: round coords to 5 dp (~1 m), drop the
+# unused altitude (3rd element) and keep only `ef_share` (the only field the map reads), minified.
 src_tracks = os.path.join(PROC, "tracks")
 n_tracks = 0
 if os.path.isdir(src_tracks):
     for f in os.listdir(src_tracks):
-        if f.endswith(".geojson"):
-            shutil.copy2(os.path.join(src_tracks, f), os.path.join(OUT, "tracks", f))
-            n_tracks += 1
+        if not f.endswith(".geojson"):
+            continue
+        gj = json.load(open(os.path.join(src_tracks, f)))
+        for feat in gj.get("features", []):
+            g = feat.get("geometry", {})
+            if g.get("type") == "LineString":
+                g["coordinates"] = [[round(p[0], 5), round(p[1], 5)] for p in g["coordinates"]]
+            feat["geometry"] = g
+            feat["properties"] = {"ef_share": (feat.get("properties") or {}).get("ef_share", 0.0)}
+        json.dump(gj, open(os.path.join(OUT, "tracks", f), "w"), separators=(",", ":"))
+        n_tracks += 1
 
 # A tiny manifest so the frontend knows what's available without a directory listing.
 with open(os.path.join(OUT, "manifest.json"), "w") as fh:
-    json.dump({"leaderboard": n_lb, "comparators": n_cmp, "tracks": n_tracks}, fh)
+    json.dump({"leaderboard": n_lb, "tracks": n_tracks}, fh)
 
-print(f"exported: leaderboard={n_lb} flights, comparators={n_cmp}, tracks={n_tracks} geojson -> {OUT}")
+print(f"exported: leaderboard={n_lb} flights, tracks={n_tracks} geojson -> {OUT}")

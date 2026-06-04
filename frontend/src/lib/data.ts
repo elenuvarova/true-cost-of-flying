@@ -45,15 +45,8 @@ export const tonnes = (kg: number, dp = 1) =>
 
 export async function loadFlights(): Promise<Flight[]> {
   const r = await fetch('./data/leaderboard.json')
+  if (!r.ok) throw new Error(`leaderboard.json ${r.status}`)
   return r.json()
-}
-export async function loadComparators(): Promise<Flight[]> {
-  try {
-    const r = await fetch('./data/comparators.json')
-    return r.ok ? r.json() : []
-  } catch {
-    return []
-  }
 }
 export async function loadTrack(flightId: string): Promise<any | null> {
   try {
@@ -68,7 +61,11 @@ const W = 100 // kg threshold for warm/cool classification
 
 export function aggregateOwners(flights: Flight[], h: Horizon): OwnerAgg[] {
   const by = new Map<string, Flight[]>()
-  for (const f of flights) (by.get(f.owner_label) ?? by.set(f.owner_label, []).get(f.owner_label)!).push(f)
+  for (const f of flights) {
+    let arr = by.get(f.owner_label)
+    if (!arr) by.set(f.owner_label, (arr = []))
+    arr.push(f)
+  }
   const rows: Omit<OwnerAgg, 'tier'>[] = []
   for (const [owner, fs] of by) {
     const fuelKg = fs.reduce((s, f) => s + f.fuel_co2_kg, 0)
@@ -80,9 +77,9 @@ export function aggregateOwners(flights: Flight[], h: Horizon): OwnerAgg[] {
       fuelT: fuelKg / 1000,
       contrailT: contrailKgSum / 1000,
       combinedT: (fuelKg + contrailKgSum) / 1000,
-      warm: fs.filter((f) => f.contrail_co2e_central > W).length,
-      cool: fs.filter((f) => f.contrail_co2e_central < -W).length,
-      zero: fs.filter((f) => Math.abs(f.contrail_co2e_central) <= W).length,
+      warm: fs.filter((f) => contrailKg(f, h) > W).length,
+      cool: fs.filter((f) => contrailKg(f, h) < -W).length,
+      zero: fs.filter((f) => Math.abs(contrailKg(f, h)) <= W).length,
       bizjet: fs.some((f) => f.bizjet_alt_flag),
       proxy: fs.some((f) => f.proxy_type_flag),
     })
@@ -131,7 +128,7 @@ export const PORTRAITS: Record<string, Portrait> = {
     headline:
       'Six of seven 757 flights formed almost nothing — then one deep-night NY→Palm Beach run added +90 t, ~2.4× that flight’s own fuel CO₂.',
     framing:
-      'All seven tracked flights are on the same in-domain Boeing 757-200, cruising near 38,000 ft (below CoCiP’s ~13 km cap) — the cleanest, least-caveated numbers in the set. Fuel is blunt: 264.6 t of CO₂. Contrails tell the opposite story: six of seven formed essentially zero, and effectively all 90.2 t of contrail CO₂e came from one deep-night run crossing a ~130 km ice-supersaturated band. Across all 7 flights that lifts warming +34% on top of fuel — the honest per-flight 30–60% GWP100 range, NOT the ~3× whole-fleet figure. A second deep-night flight formed zero: the trigger is crossing ice-supersaturated air, not night alone.',
+      'All seven tracked flights are on the same in-domain Boeing 757-200, cruising near 38,000 ft (below CoCiP’s ~13 km cap) — the cleanest, least-caveated numbers in the set. Fuel is blunt: 264.6 t of CO₂. Contrails tell the opposite story: six of seven formed essentially zero, and effectively all 90.2 t of contrail CO₂e came from one deep-night run crossing a ~130 km ice-supersaturated band. Across all 7 flights that lifts warming +34% on top of fuel (1.34×) — far below the ~3× whole-fleet ERF figure, and his is bimodal (≈0 on six flights, +239% on the one) rather than a mid-range average. A second deep-night flight formed zero: the trigger is crossing ice-supersaturated air, not night alone.',
   },
   'Taylor Swift': {
     badge: 'daytime standout',

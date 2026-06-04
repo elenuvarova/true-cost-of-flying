@@ -7,12 +7,15 @@ import Explorer from './components/Explorer'
 
 export default function App() {
   const [flights, setFlights] = useState<Flight[]>([])
+  const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+  const [horizon, setHorizon] = useState<Horizon>('GWP100')
   const [progress, setProgress] = useState(0)
-  const horizon: Horizon = 'GWP100'
 
   useLenis(setProgress)
   useEffect(() => {
-    loadFlights().then(setFlights)
+    loadFlights()
+      .then((f) => { setFlights(f); setStatus('ok') })
+      .catch(() => setStatus('error'))
   }, [])
 
   const owners = flights.length ? aggregateOwners(flights, horizon) : []
@@ -25,8 +28,25 @@ export default function App() {
 
       <main className="content">
         <Hero />
-        <Leaderboard owners={owners} total={flights.length} />
-        <Explorer flights={flights} horizon={horizon} />
+
+        {status === 'loading' && (
+          <section className="wrap" style={{ padding: '5rem 0', minHeight: '40vh' }}>
+            <p className="sec-sub" aria-live="polite">Loading flights…</p>
+          </section>
+        )}
+        {status === 'error' && (
+          <section className="wrap" style={{ padding: '5rem 0', minHeight: '40vh' }}>
+            <p className="sec-sub" role="alert">
+              Couldn’t load the flight data — please refresh. If it persists, the data file may be unavailable.
+            </p>
+          </section>
+        )}
+        {status === 'ok' && (
+          <>
+            <Leaderboard owners={owners} total={flights.length} />
+            <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
+          </>
+        )}
 
         <footer>
           <div className="wrap">

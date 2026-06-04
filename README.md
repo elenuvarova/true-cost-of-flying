@@ -1,67 +1,40 @@
-# True Cost of Flying ✈️
+# True Cost of Flying
 
-**The CO₂ number every flight tracker shows you is only about a third of the warming.** This tool takes a real flight and shows, for the *same flight*, two numbers side by side: **fuel CO₂** (what everyone shows) and **combined CO₂e = fuel CO₂ + contrail warming**, computed with real contrail physics (CoCiP), fronted by a private-jet leaderboard.
+Every jet tracker shows one number — fuel CO₂. Across aviation that is only about **a third** of the
+warming; the rest is mostly **contrails**. This shows, for the *same* private-jet flight, **two numbers** —
+fuel CO₂ and fuel + contrail CO₂e (computed with CoCiP physics) — with the contrail drawn on a map,
+coloured by where the warming actually happened.
 
-> Contrails — the white lines behind jets — spread into heat-trapping cirrus. Across aviation their warming is **larger than all the CO₂ from jet fuel**, yet no consumer tool counts it per flight. This does.
+**Live:** https://contrails.ontwrpn.com
 
-Built entirely on **free** data and tools (no paid APIs, no database). A portfolio / product case study balancing product thinking with defensible climate science.
+## Architecture — two strictly-separated halves
 
-**What's in the demo:** 84 real flights from 11 public-figure jets (2024 – early 2025), tracked via [adsb.lol](https://adsb.lol): New England Patriots, Donald Trump, Taylor Swift, Eric Schmidt, Bill Gates, Elon Musk, Kylie Jenner, Phil Knight (Nike), Mark Zuckerberg, Kim Kardashian, Drake. The physics is honest, not theatrical — some **daytime** contrails *cool* (Drake −10 t, Musk −19 t on one flight each), most flights form essentially none, while a single deep-night Trump 757 flight added **+90 t** of contrail warming (≈2.4× its fuel CO₂) and one Taylor Swift flight **more than doubled** its fuel-CO₂ warming. Contrails are a concentrated wildcard — triggered by crossing ice-supersaturated air, usually at night — not a flat multiplier. Business-jet figures above CoCiP's ~13 km calibration ceiling are flagged as under-counted, not extrapolated.
+- **Offline data pipeline** (`batch/`, `src/`, Python). adsb.lol tracks → OpenAP (fuel → CO₂) → ERA5 +
+  `pycontrails` CoCiP (contrails) → `data/processed/leaderboard.parquet` + `tracks/*.geojson`
+  (84 flights / 11 public-figure jets). This is the only place the heavy physics runs.
+  Dependencies: `requirements-batch.txt`.
+- **Frontend** (`frontend/`, React 18 + Vite + TypeScript). A static SPA with **no backend**:
+  Lenis smooth-scroll, deck.gl `TripsLayer` + maplibre (dark basemap), the cool→warm "contrail" tonal ramp.
+  It reads static JSON produced by `scripts/export_web_data.py` (parquet → `frontend/public/data/`).
 
-## How it works
-
-```
-OFFLINE BATCH (this repo, run once)                    DEPLOYED APP (read-only)
-adsb.lol globe_history  ── real flight tracks          app.py (Streamlit)
-   → OpenAP             ── fuel burn → CO₂        ┐       reads committed
-   → ERA5 (ARCO, anon)  ── humidity/met           ├──►   data/processed/*.parquet
-   → pycontrails CoCiP  ── contrail energy forcing │      + tracks/*.geojson
-   → fuse + GWP + bands ── combined CO₂e           ┘      → leaderboard + map + reveal
-        ↓
-   data/processed/leaderboard.parquet + tracks/*.geojson  (committed, < 1 MB)
-```
-
-The heavy physics (CoCiP + ERA5) runs **offline** and is precomputed into small static files. The deployed app only reads them — no live compute, no API keys, no DB. That's why it deploys free.
-
-## Run the app locally
+## Develop
 
 ```bash
-python3.12 -m venv .venv-app && . .venv-app/bin/activate
-pip install -r requirements.txt
-streamlit run app.py        # → http://localhost:8501
+# 1. (re)generate the web data from the committed parquet/geojson
+python scripts/export_web_data.py
+# 2. run the frontend
+cd frontend && npm install && npm run dev
 ```
 
-## Regenerate the data (offline batch — optional)
+## Deploy
 
-Needs the heavier batch environment (pycontrails, OpenAP, ERA5 access — all free):
+Static SPA served by nginx in a single Docker image (`frontend/Dockerfile` + `frontend/nginx.conf`),
+on the Coolify/Hetzner host at `contrails.ontwrpn.com`. In Coolify set **Base Directory = `frontend`**.
+Build = `node` → `vite build` → `nginx:alpine` serving `dist/`.
 
-```bash
-python3.12 -m venv .venv && . .venv/bin/activate
-pip install -r requirements-batch.txt
-python batch/build_dataset.py     # writes data/processed/{leaderboard.parquet, tracks/*.geojson}
-```
+## The honesty rule (non-negotiable)
 
-ERA5 is read anonymously from the public ARCO bucket (no Copernicus/Google account). The ERA5 cache lives outside the repo (`~/.cache/tcof_era5`, override with `TCOF_CACHE_DIR`) — **keep it off iCloud-synced folders**.
-
-## Project layout
-
-| Path | What |
-|------|------|
-| `app.py` | Deployed Streamlit app (read-only) |
-| `src/` | `tracks.py` (adsb.lol parser), `fuel.py` (OpenAP), `contrails.py` (CoCiP), `fuse.py` (CO₂e + tiers), `era5.py`, `constants.py` |
-| `batch/build_dataset.py` | Offline pipeline → static artifacts (`build_comparators.py` = night-transatlantic validation set) |
-| `data/processed/` | Committed leaderboard + track GeoJSON + `comparators.parquet` (what the app serves) |
-| `.streamlit/config.toml` | Brand theme (dark — keeps the no-basemap map legible) |
-| `docs/` | `CASE_STUDY.md` (PM write-up), `VALIDATION.md`, `DEPLOY.md`, `RESEARCH_BRIEF.md`, `IMPLEMENTATION_PLAN.md`, `JET_SHORTLIST.md`, `PHASE_*_RESULT.md` |
-
-## Honest caveats (built into the UI)
-
-CO₂e is never shown as a bare number: GWP100 default + GWP20 toggle + uncertainty band. The fused total is **fuel CO₂ + contrails only** (omits NOx / water vapour / aerosols — the aviation-wide "~3×" includes those). Contrail warming carries ~70% uncertainty (IPCC "low confidence"). Business jets cruise above CoCiP's ~13 km calibration ceiling, so their contrails are **under-counted, not extrapolated** (flagged). Figures are for *flights associated with an aircraft* — not proof of who was aboard.
-
-## Does the model agree with published science?
-
-Yes — and where it doesn't, [`docs/VALIDATION.md`](docs/VALIDATION.md) says so in numbers (and a condensed version ships in-app). On this 44-flight set, **32% of flights form a persistent contrail and 16% form a net-warming one** — matching Teoh et al. 2024's fleet figures (~24% / ~14%) on a completely different (private-jet, winter) sample. Per-flight contrail-vs-fuel ratios reach the published **33–63% (GWP100)** band when a jet crosses ice-supersaturated air below the calibration cap, and a *single track segment* often carries a flight's entire warming — reproducing the known power-law. The sample aggregate sits *below* the fleet figure (short winter US/EU legs largely miss the busy contrail corridors; about half the forming flights cool), and the biases (ERA5 dry bias, the bizjet altitude cap) push the numbers **down** — so the tool errs toward *under*-stating.
-
-## Data & credits
-
-Flight tracks: [adsb.lol](https://adsb.lol) (ODbL-1.0) · Meteorology: ECMWF ERA5 (ARCO) · Performance: [OpenAP](https://openap.dev) · Contrail physics: [pycontrails / CoCiP](https://py.contrails.org). Non-commercial / educational.
+The per-flight figure is **fuel CO₂ + contrails only** (typically ~1.3–1.6× fuel at GWP100). It is
+**never** presented as the aviation-wide ~3× ERF (which also includes NOx, water vapour and aerosols).
+Contrail warming carries ~70% uncertainty (IPCC "low confidence"); business-jet contrails above CoCiP's
+~13 km cap are flagged as under-counted, not extrapolated. See `docs/` for the validation write-up.

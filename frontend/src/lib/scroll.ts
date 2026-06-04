@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 
-const reduced = () =>
+export const reduced = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 // Physics smooth-scroll (the substrate every premium scroll piece sits on). Also exposes a

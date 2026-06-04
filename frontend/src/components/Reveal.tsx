@@ -7,6 +7,7 @@ export default function Reveal({ flight, horizon }: { flight: Flight; horizon: H
   const combined = fuel + contrail
   const pct = fuel ? (100 * contrail) / fuel : 0
   const unstable = contrail > 0 && pct > 100
+  const coolUnstable = contrail < 0 && Math.abs(pct) > 100
 
   const fuelC = useCountUp(fuel / 1000, 1300)
   const combC = useCountUp(combined / 1000, 1700, true)
@@ -43,7 +44,7 @@ export default function Reveal({ flight, horizon }: { flight: Flight; horizon: H
     )
     delta = (
       <span className="delta cool">
-        contrails cooled by {tonnes(Math.abs(contrail))} t ({pct.toFixed(0)}%)
+        contrails cooled by {tonnes(Math.abs(contrail))} t{coolUnstable ? '' : ` (${pct.toFixed(0)}%)`}
       </span>
     )
   } else {
@@ -77,8 +78,13 @@ export default function Reveal({ flight, horizon }: { flight: Flight; horizon: H
         {horizon} · uncertainty band {band[0].toFixed(1)}–{band[1].toFixed(1)} t · contrail term carries ~70%
         uncertainty (IPCC “low confidence”). {flight.bizjet_alt_flag && 'Above CoCiP’s ~13 km cap → likely under-counted. '}
         {unstable &&
-          'Contrails here exceed the flight’s own fuel CO₂, so we headline the absolute tonnes rather than a % — a per-flight percentage that large would invite confusion with the aviation-wide ~3× figure.'}
+          'Contrails here exceed the flight’s own fuel CO₂, so we headline the absolute tonnes rather than a % — a per-flight percentage that large would invite confusion with the aviation-wide ~3× figure. '}
+        {contrail < 0 &&
+          'This flight’s contrails net-cooled — but CO₂ warms for centuries while contrail cooling is a one-off radiative event, so a net-negative figure does not mean the flight was climate-positive.'}
       </div>
+      <span className="sr-only" role="status" aria-live="polite">
+        Fuel {tonnes(fuel)} tonnes CO₂; combined {tonnes(combined)} tonnes CO₂e ({horizon}).
+      </span>
     </>
   )
 }
