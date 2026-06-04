@@ -21,7 +21,14 @@
 
 **One-line read:** the *physics is calibrated correctly* (formation incidence, net-warming incidence, the power-law, the per-flight in-domain ratios, **and the day/night sign control** all reproduce the literature). The committed 44-flight sample's aggregate looks flat **not because contrails don't matter** but because it is daytime-heavy and altitude-mixed: daytime cooling cancels much of the night warming, and the above-cap business jets add unreliable cooling. Separate the trustworthy regime — **night, in-domain — and warming is unambiguous (+2.6×10¹⁴ J, all positive)**. We disclose this rather than inflate it. (§6 is the new finding from this pass.)
 
-> **Update (dataset expanded 44 → 77, night-enriched).** A follow-up harvest added winter flights with a **night pre-filter** (only night flights, where contrails concentrate, were run through CoCiP). Two consequences to read honestly: (1) formation incidence now reads ~34% form / ~21% net-warming — *higher* than Teoh's fleet 24%/14% partly by design (night-selection), so treat it as an **upper estimate, not an unbiased fleet match**. (2) It surfaced the project's strongest single-flight story: a **Donald Trump Boeing-757 deep-night NY→Palm Beach flight (2025-02-14) at +90 t contrail CO₂e — ~2.4× that flight's fuel**, and crucially **in-domain** (below the ~13 km cap), so it is *not* an under-count caveat but one of the most trustworthy numbers in the set. The same NY→Palm Beach route in December formed nothing, and a second deep-night Trump flight also formed zero — confirming the trigger is **crossing ice-supersaturated air, not night alone** (night only removes the daytime cooling offset). The day/night §6 table below is from the pre-expansion 62-run cache; the sign result is unchanged.
+> **Update (dataset expanded 44 → 84; this is the current canonical state).** Follow-up harvests grew the set to **84 flights / 11 owners (2024-01 → 2025-02)** — a night-pre-filtered sweep (only night flights, where contrails concentrate, were run through CoCiP) plus a targeted harvest of **Drake's in-domain Boeing 767**. Read honestly:
+> - **Incidence is now night-biased.** ~36% of flights form a contrail / ~21% net-warming — higher than Teoh's fleet 24%/14% partly *by design* (we deliberately over-sampled night flights). Treat it as an **upper estimate, not an unbiased fleet match**.
+> - **Aggregates shifted positive** (in-domain contrail/fuel +11.2%, whole-sample +7.6%, vs +2.7%/−0.6% on the original 44) — again partly the night-enrichment, not a fleet figure. Honest direction, not a fleet ratio.
+> - **Strongest single-flight finding:** a **Donald Trump Boeing-757 deep-night NY→Palm Beach flight (2025-02-14) at +90 t contrail CO₂e (~2.4× that flight's fuel)** — and **in-domain** (below the ~13 km cap), so it is one of the *most trustworthy* numbers in the set, not an under-count. The same route in December formed nothing and a second deep-night Trump flight also formed zero → the trigger is **crossing ice-supersaturated air, not night alone**.
+> - **Cleanest day/night proof:** **Drake's 767** (in-domain) flew Toronto→Houston by **day** (net-**cooled −10.3 t**) and the return Houston→Toronto by **night** (warmed **+1.6 t**) — same city-pair, opposite sign, 9 days apart. 5 of his 7 flights formed essentially none.
+> - **Still the same caveat as the headline finding:** the unstable-ratio trap is real — e.g. an Eric Schmidt in-domain flight shows +463% only because its fuel base is small; we headline absolute tonnes there, not the %.
+>
+> The §2–§7 numbers below are the original 44/62-flight analysis (kept as the audit trail); the sign/direction results are unchanged by the expansion.
 
 ---
 
@@ -181,8 +188,8 @@ import pandas as pd, numpy as np, json
 df = pd.read_parquet("data/processed/leaderboard.parquet")
 df["pct100"] = df.contrail_pct_of_fuel
 nz = df[df.contrail_ef_joules.abs() >= 1e6]                       # contrail-forming flights
-print("forming:", len(nz), "/", len(df),                          # 14 / 44
-      "| net-warming:", (df.contrail_co2e_central > 0).sum())      # 7
+print("forming:", len(nz), "/", len(df),                          # 30 / 84 (was 14/44; now night-enriched)
+      "| net-warming:", (df.contrail_co2e_central > 0).sum())      # 18
 print("in-domain forming pcts:", sorted(nz[~nz.bizjet_alt_flag].pct100.round(1)))
 print("sample combined/fuel:", round(df.combined_co2e_central.sum()/df.fuel_co2_kg.sum(), 3), "x")
 # power-law inside one flight:

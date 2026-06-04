@@ -45,7 +45,7 @@ Two hard constraints shaped the architecture:
 | Cut | Why |
 |---|---|
 | GWP* and 500-yr from the metric toggle | GWP* is a *flow/rate* metric — using it as a per-flight *stock* number would be scientifically wrong. Kept GWP100 + GWP20 only. |
-| 20–40 flights → started at ~10–12 | A small *verified* set beats a large noisy one given attribution + power-law + heavy offline cost. (Grew to 44 once the batch was cheap and cached.) |
+| 20–40 flights → started at ~10–12 | A small *verified* set beats a large noisy one given attribution + power-law + heavy offline cost. (Grew to 84 flights / 11 owners once the batch was cheap, cached, and night-targeted.) |
 | 3D extrusion / camera animation | The aha is the two numbers; a flat coloured path delivers it. Don't let viz fiddliness block the point. |
 | A spurious 1..N rank | Magnitude reshuffles with the metric, so the leaderboard uses **tiers** (high/med/low) — leaning on the brief's finding that the binary "does this matter" verdict is ~90% robust across metrics even when the magnitude isn't. |
 | NOx / H₂O / aerosols | Out of MVP scope; their absence is **disclosed on-screen** so the per-flight number is never implied to be the full ~3×. |
@@ -69,12 +69,13 @@ The honest framing is enforced everywhere: the combined number is **fuel-CO₂ +
 
 Replacing a flat ~3× multiplier with an opaque model invites the obvious objection: *"why trust it?"* So I checked it against published science — and the model **reproduces results it was never fit to** (full detail + reproducible code in `docs/VALIDATION.md`):
 
-- **Formation incidence:** 32% of our flights form a persistent contrail / 16% net-warming — vs Teoh 2024's fleet ~24% / ~14%.
+- **Formation incidence:** on the original random-winter sample, 32% of flights formed a persistent contrail / 16% net-warming — vs Teoh 2024's fleet ~24% / ~14%, the same order of magnitude. (After a deliberately night-enriched expansion to 84 flights it reads ~36% / ~21% — disclosed as an *upper* estimate, not an unbiased fleet match.)
 - **The power-law:** a *single* track segment often carries ~all of a flight's energy forcing — Teoh's "2.7% of flights = 80% of forcing" at per-flight scale. (This is *why* the product ships tiers, not a precise rank.)
-- **Day vs night controls the sign:** night contrails warm (100% of night waypoints in our data); many daytime contrails cool. **Night transatlantic widebodies aggregate +57% contrail/fuel; daytime private jets ~0% — same pipeline, ~20× swing from regime alone** (Stuber 2006, reproduced).
+- **Day vs night controls the sign:** night contrails warm (100% of night waypoints in our data); many daytime contrails cool. Sharpest demonstration: **Drake's in-domain 767 flew the same Toronto↔Houston city-pair by day (net-cooled −10.3 t) and by night (warmed +1.6 t)** — opposite sign, identical route. And night transatlantic widebodies aggregate **+57% contrail/fuel** vs ~0% for daytime private jets — same pipeline, ~20× swing from regime alone (Stuber 2006, reproduced).
+- **The headline a model couldn't fake:** a **Donald Trump 757 deep-night flight added +90 t of contrail warming (~2.4× its own fuel CO₂)** — on the *in-domain* airframe where the numbers are most trustworthy — while six of his other seven flights formed essentially none. Contrails are a concentrated wildcard, not a flat multiplier.
 - **The EF→CO₂e conversion** matches Contrails.org's own published factor to **0.8%** (independently derived from IPCC AGWP100).
 
-**Where we diverge, named and signed:** the daytime private-jet aggregate sits *below* the fleet 33–63% band — because daytime cooling cancels night warming, the ~13 km business-jet altitude cap under-counts, and ERA5's upper-troposphere dry bias suppresses contrails. **Every bias pushes the same direction — down — so the tool errs toward *under*-stating**, the conservative direction for an accountability claim. That's the strongest thing you can say about a soft number: you know which way it's wrong.
+**Where we diverge, named and signed:** the daytime/in-domain aggregate sits *below* the fleet 33–63% band — because daytime cooling cancels night warming, the ~13 km business-jet altitude cap under-counts, and ERA5's upper-troposphere dry bias suppresses contrails. **Every systematic bias pushes the same direction — down — so the tool errs toward *under*-stating**, the conservative direction for an accountability claim. (We also surfaced an *unstable-ratio* trap — short low-fuel flights where contrail ≫ fuel yield absurd %s like +463%; the product headlines absolute tonnes there, not the ratio.) Knowing which way a soft number is wrong is the strongest thing you can say about it.
 
 ---
 
@@ -97,6 +98,6 @@ Honest context: this is a zero-traffic portfolio prototype with no accounts, so 
 
 **Where the science is thin (and disclosed):** business-jet altitude cap → under-counting; contrail ERF ~70% uncertainty + the efficacy spread; magnitude is metric-dependent (the verdict isn't); we omit NOx/H₂O/aerosols.
 
-**What's next:** add NOx (via OpenAP emission indices) so a *legitimate* per-flight number can approach ~3×; fold the night-transatlantic comparators into the main view; a live single-flight drill-down on a 16 GB host; broaden the verified jet set. The clearest next dataset lever isn't season (winter already favours contrails) — it's **time-of-day + route**: night crossings of busy ISSR corridors.
+**What's next:** add NOx (via OpenAP emission indices) so a *legitimate* per-flight number can approach ~3×; fold the night-transatlantic commercial comparators into the main view; a live single-flight drill-down on a 16 GB host. The clearest dataset lever proved to be **time-of-day + route** (not season — winter already favours contrails): a night-pre-filtered harvest of busy-corridor flights is exactly what surfaced the Trump +90 t and Drake day/night results, and is the cheapest way to keep growing the verified set.
 
 **The bar for this artifact:** *a reviewer reaches the two-number reveal, understands that contrails add ~30–60% at GWP100 (and why the aviation-wide figure is ~3×), sees the uncertainty, and trusts the number because the validation section shows it agrees with a published comparator.*
