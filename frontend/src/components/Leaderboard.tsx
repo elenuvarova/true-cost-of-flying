@@ -42,7 +42,7 @@ export default function Leaderboard({ owners, total }: { owners: OwnerAgg[]; tot
       <div className="lb-grid">
         <Appear className="lb-card lb-hero">
           <span className="stripe" style={{ background: stripeColor(first.tier) }} />
-          <span className="ghost">1</span>
+          <span className="ghost">01</span>
           <div className="lb-top">
             <div>
               <div className="lb-rank">Rank 01</div>
@@ -64,6 +64,7 @@ export default function Leaderboard({ owners, total }: { owners: OwnerAgg[]; tot
         {rest.map((o, i) => (
           <Appear key={o.owner} className="lb-card lb-row" delay={(i % 2) * 60}>
             <span className="stripe" style={{ background: stripeColor(o.tier) }} />
+            <span className="ghost">{String(i + 2).padStart(2, '0')}</span>
             <div className="lb-top">
               <div>
                 <div className="lb-rank">Rank {String(i + 2).padStart(2, '0')}</div>
