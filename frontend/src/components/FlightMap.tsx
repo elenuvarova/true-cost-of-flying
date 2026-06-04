@@ -26,7 +26,15 @@ function headAt(trips: Trip[], t: number) {
   const f = Math.max(0, Math.min(1, t - i))
   const lon = a[0] + (b[0] - a[0]) * f
   const lat = a[1] + (b[1] - a[1]) * f
-  const bearing = (Math.atan2((b[0] - a[0]) * Math.cos((lat * Math.PI) / 180), b[1] - a[1]) * 180) / Math.PI
+  // smooth the heading over ~4 segments so noisy short landing segments don't make the plane wobble
+  const back = trips[Math.max(0, i - 4)].path[0]
+  let dlon = lon - back[0]
+  let dlat = lat - back[1]
+  if (Math.abs(dlon) < 1e-7 && Math.abs(dlat) < 1e-7) {
+    dlon = b[0] - a[0]
+    dlat = b[1] - a[1]
+  }
+  const bearing = (Math.atan2(dlon * Math.cos((lat * Math.PI) / 180), dlat) * 180) / Math.PI
   return { lon, lat, bearing }
 }
 
