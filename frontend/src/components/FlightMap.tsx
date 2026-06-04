@@ -142,8 +142,8 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
       overlay?.setProps({ layers: [layerAt(trips, total, total), planeLayer(headAt(trips, total))] })
       return
     }
-    // normalise so the whole contrail draws in ~4.5s regardless of segment count
-    const step = total / (4.5 * 60)
+    // normalise so the whole contrail draws in ~6s regardless of segment count
+    const step = total / (6 * 60)
     let t = 0
     let raf = 0
     let visible = true
