@@ -48,7 +48,7 @@ export default function Leaderboard({ owners, total }: { owners: OwnerAgg[]; tot
               <div className="lb-rank">Rank 01</div>
               <div className="lb-name">{first.owner}</div>
               <div className="lb-ac">
-                {first.ac_type} · {first.flights} flights · {first.warm}🔥 {first.cool}❄ {first.zero}○
+                {first.ac_type} · {first.flights} flights · {first.warm} warmed · {first.cool} cooled · {first.zero} ~none
               </div>
             </div>
             <div className="lb-val" style={{ textAlign: 'right' }}>
