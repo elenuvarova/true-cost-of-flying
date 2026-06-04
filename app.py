@@ -48,8 +48,9 @@ st.markdown("""
   --ink:#eef3f9; --muted:#93a8bd;
 }
 html, body, [data-testid="stAppViewContainer"]{ background:var(--bg); }
-.block-container{ max-width: 900px; padding-top: 2rem; padding-bottom: 4rem; }
-@media (max-width:640px){ .block-container{ padding-left:.85rem; padding-right:.85rem; padding-top:1rem; } }
+/* padding-top must clear Streamlit's fixed header (~3.75rem) or the first element is clipped */
+.block-container{ max-width: 900px; padding-top: 4.75rem; padding-bottom: 4rem; }
+@media (max-width:640px){ .block-container{ padding-left:.85rem; padding-right:.85rem; padding-top:3.6rem; } }
 #MainMenu, footer, .stDeployButton{ visibility:hidden; }
 *{ overflow-wrap:anywhere; }
 
@@ -61,6 +62,8 @@ html, body, [data-testid="stAppViewContainer"]{ background:var(--bg); }
              letter-spacing:-.02em; margin:0 0 .7rem; padding-top:.1em; }
 .hero-title .g{ background:linear-gradient(95deg,var(--fuel-br),var(--warm-br) 65%);
                 -webkit-background-clip:text; background-clip:text; color:transparent; }
+.hero-title .plane{ font-size:.62em; display:inline-block; transform:translateY(-.05em) rotate(-18deg);
+                    filter:drop-shadow(0 2px 6px rgba(255,122,95,.35)); }
 .hero-sub{ color:#c2d2e3; font-size:clamp(1.02rem, 2.8vw, 1.22rem); line-height:1.5; max-width:54ch; font-weight:400; }
 .hero-sub .em{ color:var(--warm-br); font-weight:700; font-style:normal; }
 
@@ -126,22 +129,36 @@ html, body, [data-testid="stAppViewContainer"]{ background:var(--bg); }
 """, unsafe_allow_html=True)
 
 
+_LB = os.path.join(PROC, "leaderboard.parquet")
+_CMP = os.path.join(PROC, "comparators.parquet")
+
+
+def _mtime(path):
+    return os.path.getmtime(path) if os.path.exists(path) else 0.0
+
+
+# `ver` (the data file's mtime) is part of the cache key on purpose: @st.cache_data otherwise
+# keys only on the function source + args, so when Streamlit Cloud hot-reloads new CODE without
+# restarting the process, these loaders would keep returning the STALE DataFrame from first start.
+# Threading the mtime through busts the cache whenever the committed data is rebuilt/redeployed.
 @st.cache_data
-def load_board():
-    return pd.read_parquet(os.path.join(PROC, "leaderboard.parquet"))
+def load_board(ver):
+    return pd.read_parquet(_LB)
 
 
 @st.cache_data
-def load_track(flight_id):
+def load_track(flight_id, ver):
     p = os.path.join(PROC, "tracks", f"{flight_id}.geojson")
     return json.load(open(p)) if os.path.exists(p) else None
 
 
 @st.cache_data
-def load_comparators():
+def load_comparators(ver):
     """Optional commercial comparators (night transatlantic widebodies). Absent on deploy = fine."""
-    p = os.path.join(PROC, "comparators.parquet")
-    return pd.read_parquet(p) if os.path.exists(p) else None
+    return pd.read_parquet(_CMP) if os.path.exists(_CMP) else None
+
+
+DATA_VER = _mtime(_LB)  # one version stamp for all loaders — all data is rebuilt together
 
 
 def t(kg):
@@ -178,12 +195,12 @@ def wc_bar(w, c, z):
     return '<div class="wcbar">' + "".join(seg) + '</div>'
 
 
-df = load_board()
+df = load_board(DATA_VER)
 
 # ---- Hero ----
 st.markdown(
     '<div class="kicker">Fuel CO₂ is only part of the story</div>'
-    '<div class="hero-title" role="heading" aria-level="1">The <span class="g">true cost</span><br>of flying</div>'
+    '<div class="hero-title" role="heading" aria-level="1">The <span class="g">true cost</span><br>of flying <span class="plane">✈️</span></div>'
     '<p class="hero-sub">Every jet tracker shows you one number: CO₂. But across aviation, CO₂ is only about '
     '<span class="em">a third</span> of the warming — the rest is mostly <span class="em">contrails</span>. '
     'Pick a famous flyer, pick one of their flights, and see the <em>same flight</em> with its contrail '
@@ -492,7 +509,7 @@ st.caption(f"{horizon} · uncertainty band {t(band_lo)}–{t(band_hi)} · contra
               "aviation-wide ~3× figure (which also includes the NOx/H₂O/aerosols we don't compute)." if unstable else ""))
 
 # ---- Map of the selected flight ----
-gj = load_track(row["flight_id"])
+gj = load_track(row["flight_id"], DATA_VER)
 if gj and gj["features"]:
     segs = []
     for f in gj["features"]:
@@ -522,7 +539,7 @@ if gj and gj["features"]:
                f"Fuel CO₂ is roughly uniform; contrail warming is concentrated where the jet crossed humid, icy air.")
 
 # ---- Night transatlantic widebodies: the regime where contrails dominate ----
-comp = load_comparators()
+comp = load_comparators(DATA_VER)
 if comp is not None and len(comp):
     st.markdown('<div class="sec" role="heading" aria-level="2"><span class="n">03</span>'
                 '🌙 The other extreme — night transatlantic widebodies</div>', unsafe_allow_html=True)
