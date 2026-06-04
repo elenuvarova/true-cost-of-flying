@@ -2,12 +2,48 @@ import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import { TripsLayer } from '@deck.gl/geo-layers'
+import { IconLayer } from '@deck.gl/layers'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { efColor } from '../lib/colors'
 import { loadTrack } from '../lib/data'
 import { reduced } from '../lib/scroll'
 
 const DARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+
+// white top-down airplane (points north) as a data-URI icon for the moving head-of-trail plane
+const PLANE_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32"><path fill="#ffffff" d="M16 2.6c-1 0-1.7 1.1-1.7 2.7v7.3L3.5 18v2.3l10.8-3.4V22L11 24.6v1.8l5-1.5 5 1.5v-1.8L17.7 22v-5.1l10.8 3.4V18L17.7 12.6V5.3c0-1.6-.7-2.7-1.7-2.7z"/></svg>'
+const PLANE_ICON = 'data:image/svg+xml,' + encodeURIComponent(PLANE_SVG)
+
+// position + heading of the drawing head at animation time t (segments are ~2-point trips, ordered)
+function headAt(trips: Trip[], t: number) {
+  const N = trips.length
+  if (!N) return null
+  const i = Math.max(0, Math.min(N - 1, Math.floor(t)))
+  const path = trips[i].path
+  const a = path[0]
+  const b = path[path.length - 1]
+  const f = Math.max(0, Math.min(1, t - i))
+  const lon = a[0] + (b[0] - a[0]) * f
+  const lat = a[1] + (b[1] - a[1]) * f
+  const bearing = (Math.atan2((b[0] - a[0]) * Math.cos((lat * Math.PI) / 180), b[1] - a[1]) * 180) / Math.PI
+  return { lon, lat, bearing }
+}
+
+const MAP_BEARING = 0
+
+const planeLayer = (head: { lon: number; lat: number; bearing: number } | null) =>
+  new IconLayer({
+    id: 'plane',
+    data: head ? [head] : [],
+    getPosition: (d: any) => [d.lon, d.lat],
+    getIcon: () => ({ url: PLANE_ICON, width: 32, height: 32, anchorX: 16, anchorY: 16, mask: false }),
+    getSize: 26,
+    sizeUnits: 'pixels',
+    getAngle: (d: any) => -d.bearing - MAP_BEARING,
+    billboard: true,
+    parameters: { depthTest: false },
+  } as any)
 
 type Trip = { path: [number, number][]; timestamps: number[]; color: [number, number, number] }
 
@@ -61,14 +97,14 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
       center: [-80, 32],
       zoom: 3.4,
       pitch: 46,
-      bearing: -10,
+      bearing: MAP_BEARING,
       attributionControl: { compact: true },
     })
     const overlay = new MapboxOverlay({ interleaved: true, layers: [] })
     map.addControl(overlay as any)
     map.on('load', () => {
       loadedRef.current = true
-      if (boundsRef.current) map.fitBounds(boundsRef.current, { padding: 90, pitch: 46, bearing: -10, duration: 0 })
+      if (boundsRef.current) map.fitBounds(boundsRef.current, { padding: 90, pitch: 46, bearing: MAP_BEARING, duration: 0 })
     })
     mapRef.current = map
     overlayRef.current = overlay
@@ -84,7 +120,7 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
       boundsRef.current = bounds
       setTrips(trips)
       if (mapRef.current && loadedRef.current)
-        mapRef.current.fitBounds(bounds, { padding: 90, pitch: 46, bearing: -10, duration: 1200 })
+        mapRef.current.fitBounds(bounds, { padding: 90, pitch: 46, bearing: MAP_BEARING, duration: 1200 })
     })
     return () => { alive = false }
   }, [flightId])
@@ -94,7 +130,8 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
     const total = nRef.current
     const overlay = overlayRef.current
     if (reduced()) {
-      overlay?.setProps({ layers: [layerAt(trips, total, total)] }) // fully drawn, static
+      // fully drawn, plane parked at the destination
+      overlay?.setProps({ layers: [layerAt(trips, total, total), planeLayer(headAt(trips, total))] })
       return
     }
     // normalise so the whole contrail draws in ~4.5s regardless of segment count
@@ -107,7 +144,7 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
     const tick = () => {
       if (visible) {
         t = (t + step) % total
-        overlay?.setProps({ layers: [layerAt(trips, total, t)] })
+        overlay?.setProps({ layers: [layerAt(trips, total, t), planeLayer(headAt(trips, t))] })
       }
       raf = requestAnimationFrame(tick)
     }

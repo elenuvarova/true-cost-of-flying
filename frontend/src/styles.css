@@ -108,10 +108,6 @@ section{ position:relative; }
 .lb-card .stripe{ position:absolute; left:0; top:0; bottom:0; width:4px; }
 /* hero card = rank #1, full width, oversized ghost numeral */
 .lb-hero{ grid-column:span 12; min-height:200px; display:flex; flex-direction:column; justify-content:flex-end; padding:1.6rem 1.7rem; }
-.lb-card .ghost{ position:absolute; right:1.1rem; top:50%; transform:translateY(-50%);
-  font-family:var(--sans); font-weight:700; line-height:.8; letter-spacing:-.05em;
-  font-size:clamp(2.6rem,6vw,3.8rem); color:rgba(255,255,255,.04); pointer-events:none; user-select:none; }
-.lb-hero .ghost{ right:1.9rem; font-size:clamp(6.5rem,13vw,10.5rem); color:rgba(255,255,255,.055); }
 .lb-row{ grid-column:span 6; }
 @media (max-width:720px){ .lb-row{ grid-column:span 12; } }
 .lb-rank{ font-family:var(--sans); font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; font-size:.95rem; }

@@ -18,7 +18,7 @@ export default function Hero() {
         </defs>
         <path className="trail" d="M12 74 C 96 74, 178 56, 282 26" stroke="url(#trailH)" strokeWidth="5" strokeLinecap="round" />
         {/* SF Symbols airplane glyph at the contrail tip, flying up-right */}
-        <g transform="translate(285 22) rotate(20) scale(1.7) translate(-8 -8)">
+        <g transform="translate(287 21) rotate(31) scale(1.55) translate(-8 -8)">
           <path
             className="jet"
             fill="#f4f8fc"
