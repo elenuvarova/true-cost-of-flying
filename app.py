@@ -41,6 +41,7 @@ if _gc:
 # #2f6aa8 ≈ 5.6:1). Brighter tints (--warm-br/--cool-br) are for text/accents on dark only.
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&family=Space+Grotesk:wght@500;700&display=swap');
 :root{
   --bg:#0a1422; --panel:#13243a; --panel-2:#0f1d30; --line:#22405f;
   --fuel:#d9994e; --warm:#c43a26; --cool:#2f6aa8;
@@ -54,18 +55,64 @@ html, body, [data-testid="stAppViewContainer"]{ background:var(--bg); }
 #MainMenu, footer, .stDeployButton{ visibility:hidden; }
 *{ overflow-wrap:anywhere; }
 
-/* ---- Hero (bold) ---- */
-.kicker{ display:inline-block; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
-         font-weight:800; color:var(--warm-br); border:1px solid #3a2a2a; background:rgba(196,58,38,.10);
-         padding:.28rem .7rem; border-radius:999px; margin-bottom:1rem; }
-.hero-title{ font-size:clamp(2.3rem, 9vw, 4.2rem); font-weight:900; line-height:1.04;
-             letter-spacing:-.02em; margin:0 0 .7rem; padding-top:.1em; }
-.hero-title .g{ background:linear-gradient(95deg,var(--fuel-br),var(--warm-br) 65%);
-                -webkit-background-clip:text; background-clip:text; color:transparent; }
-.hero-title .plane{ font-size:.62em; display:inline-block; transform:translateY(-.05em) rotate(-18deg);
-                    filter:drop-shadow(0 2px 6px rgba(255,122,95,.35)); }
-.hero-sub{ color:#c2d2e3; font-size:clamp(1.02rem, 2.8vw, 1.22rem); line-height:1.5; max-width:54ch; font-weight:400; }
-.hero-sub .em{ color:var(--warm-br); font-weight:700; font-style:normal; }
+/* ---- Hero (awwwards: editorial display type + a jet that draws its own contrail) ---- */
+.hero{ position:relative; text-align:center; max-width:42rem; margin:0 auto; padding:1.4rem 0 .5rem; isolation:isolate; }
+/* ambient warm bloom (no image) — horizontal inset 0 so it can't cause sideways scroll */
+.hero::before{ content:""; position:absolute; inset:-16% 0 auto 0; height:152%; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(40% 50% at 26% 10%, rgba(240,181,106,.14), transparent 70%),
+    radial-gradient(46% 56% at 78% 4%,  rgba(255,122,95,.15),  transparent 72%),
+    radial-gradient(54% 50% at 50% 30%, rgba(255,140,100,.14), transparent 68%);
+  animation:auroraDrift 24s ease-in-out infinite alternate; }
+.hero::after{ content:""; position:absolute; inset:0; z-index:-1; opacity:.045; pointer-events:none; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px; }
+@keyframes auroraDrift{ from{ transform:translate3d(-1.4%,-1%,0) scale(1);} to{ transform:translate3d(1.4%,1.2%,0) scale(1.06);} }
+
+.kicker{ display:block; width:fit-content; max-width:100%; margin:0 auto 1.15rem;
+  font-size:clamp(.62rem,2.6vw,.7rem); letter-spacing:.16em; line-height:1.45;
+  text-transform:uppercase; font-weight:700; color:var(--muted); border:1px solid var(--line);
+  padding:.34rem .9rem; border-radius:999px; }
+.kicker::before{ content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--warm-br); margin-right:.55em; vertical-align:middle; box-shadow:0 0 10px 1px rgba(255,122,95,.7); }
+
+.hero-title{ font-family:'Space Grotesk',system-ui,-apple-system,sans-serif; font-size:clamp(2.2rem,9.5vw,6rem);
+  font-weight:700; line-height:.95; letter-spacing:-.03em; margin:0 auto .15rem; padding-top:.1em; text-wrap:balance; }
+.hero-title .g{ font-family:'Fraunces',Georgia,serif; font-weight:600; font-style:italic; letter-spacing:-.01em;
+  background:linear-gradient(95deg,var(--fuel-br),var(--warm-br) 55%,var(--fuel-br)); background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 3px 22px rgba(255,122,95,.24)); }
+
+.hero-plane{ display:block; width:clamp(200px,46vw,330px); height:auto; margin:.5rem auto 1rem; overflow:visible; }
+.hero-plane .trail{ stroke-dasharray:340; stroke-dashoffset:340; animation:drawTrail 1.5s cubic-bezier(.4,0,.2,1) .3s forwards; }
+.hero-plane .jet{ opacity:0; transform-box:fill-box; transform-origin:center;
+  animation:jetIn .55s cubic-bezier(.2,.7,.2,1) 1s forwards; filter:drop-shadow(0 3px 8px rgba(255,170,120,.5)); }
+@keyframes drawTrail{ to{ stroke-dashoffset:0; } }
+@keyframes jetIn{ from{ opacity:0; transform:scale(.55);} to{ opacity:1; transform:scale(1);} }
+
+.hero-rule{ width:58px; height:3px; margin:0 auto 1.3rem; border-radius:3px;
+  background:linear-gradient(90deg,var(--fuel-br),var(--warm-br)); opacity:.9; }
+
+.hero-sub{ color:var(--muted); font-size:clamp(1.05rem,2.6vw,1.26rem); line-height:1.55; max-width:min(48ch,100%);
+  margin:0 auto; font-weight:400; text-wrap:balance; }
+.hero-sub .em{ color:var(--ink); font-weight:600;
+  background:linear-gradient(var(--warm-br),var(--warm-br)) bottom/100% 2px no-repeat; padding-bottom:1px; }
+
+/* staggered entrance (kicker → title → rule/sub after the contrail draws) */
+.hero-anim{ opacity:0; transform:translateY(14px); animation:riseIn .7s cubic-bezier(.2,.7,.2,1) forwards; }
+.d1{ animation-delay:.05s;} .d2{ animation-delay:.16s;} .d3{ animation-delay:1.5s;} .d4{ animation-delay:1.65s;}
+@keyframes riseIn{ to{ opacity:1; transform:none;} }
+
+@media (prefers-reduced-motion:no-preference){
+  .hero-title .g{ animation:heatflow 8s ease-in-out infinite; }
+  @keyframes heatflow{ 0%,100%{ background-position:0% 50%;} 50%{ background-position:100% 50%;} }
+}
+@media (prefers-reduced-motion:reduce){
+  .hero::before{ animation:none; }
+  .hero-plane .trail{ stroke-dashoffset:0; animation:none; }
+  .hero-plane .jet{ opacity:1; animation:none; }
+  .hero-anim{ opacity:1; transform:none; animation:none; }
+}
 
 /* ---- Section labels (bold rule) ---- */
 .sec{ font-size:clamp(1.15rem,3.4vw,1.5rem); font-weight:800; letter-spacing:-.01em; color:var(--ink);
@@ -197,14 +244,28 @@ def wc_bar(w, c, z):
 
 df = load_board(DATA_VER)
 
-# ---- Hero ----
+# ---- Hero — a jet drawing its own cool→warm contrail (SVG, no SMIL so Streamlit can't strip it) ----
 st.markdown(
-    '<div class="kicker">Fuel CO₂ is only part of the story</div>'
-    '<div class="hero-title" role="heading" aria-level="1">The <span class="g">true cost</span><br>of flying <span class="plane">✈️</span></div>'
-    '<p class="hero-sub">Every jet tracker shows you one number: CO₂. But across aviation, CO₂ is only about '
-    '<span class="em">a third</span> of the warming — the rest is mostly <span class="em">contrails</span>. '
-    'Pick a famous flyer, pick one of their flights, and see the <em>same flight</em> with its contrail '
-    'warming added — computed with CoCiP physics, not guessed.</p>',
+    '<div class="hero">'
+    '<div class="kicker hero-anim d1">Fuel CO₂ is only part of the story</div>'
+    '<div class="hero-title hero-anim d2" role="heading" aria-level="1">'
+    'The <span class="g">true cost</span><br>of flying</div>'
+    '<svg class="hero-plane" viewBox="0 0 300 96" fill="none" aria-hidden="true">'
+    '<defs><linearGradient id="trailA" x1="0" x2="1" y1="0" y2="0">'
+    '<stop offset="0" stop-color="#6aa9ee" stop-opacity="0"/>'
+    '<stop offset=".4" stop-color="#6aa9ee" stop-opacity=".5"/>'
+    '<stop offset=".78" stop-color="#ff7a5f"/>'
+    '<stop offset="1" stop-color="#f0b56a"/></linearGradient></defs>'
+    '<path class="trail" d="M12 74 C 96 74, 178 56, 286 24" stroke="url(#trailA)" '
+    'stroke-width="5" stroke-linecap="round"/>'
+    '<g transform="translate(286 24) rotate(-17)">'
+    '<path class="jet" d="M11 0 L-11 -8 L-4 0 L-11 8 Z" fill="#f4f8fc"/></g></svg>'
+    '<div class="hero-rule hero-anim d3"></div>'
+    '<p class="hero-sub hero-anim d4">Every jet tracker shows one number: CO₂. But across aviation that’s '
+    'only about <span class="em">a third</span> of the warming — the rest is mostly <span class="em">contrails</span>. '
+    'Pick a flyer, pick a flight, and see the <em>same flight</em> with its contrail warming added — '
+    'computed with CoCiP physics, not guessed.</p>'
+    '</div>',
     unsafe_allow_html=True)
 
 # ---- Time-horizon toggle (in the main flow so it is reachable on mobile, where the sidebar is hidden) ----
