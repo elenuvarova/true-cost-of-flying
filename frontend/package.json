@@ -1,0 +1,31 @@
+{
+  "name": "tcof-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "export-data": "python3 ../scripts/export_web_data.py",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.0.27",
+    "@deck.gl/geo-layers": "^9.0.27",
+    "@deck.gl/layers": "^9.0.27",
+    "@deck.gl/mapbox": "^9.0.27",
+    "framer-motion": "^11.5.6",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.14",
+    "maplibre-gl": "^4.7.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}
