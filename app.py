@@ -34,7 +34,9 @@ if _gc:
 FUEL, WARM, COOL = "#d9994e", "#e2503a", "#4e8fd6"
 st.markdown("""
 <style>
-:root { --fuel:#d9994e; --warm:#e2503a; --cool:#4e8fd6; --ink:#e8eef5; --muted:#9bb0c4; }
+/* warm/cool are the fill colours behind WHITE bar text → darkened to clear WCAG 4.5:1
+   (#c43a26 ≈ 5.3:1, #2f6aa8 ≈ 5.6:1). Map/tier accents use their own brighter literals. */
+:root { --fuel:#d9994e; --warm:#c43a26; --cool:#2f6aa8; --ink:#e8eef5; --muted:#9bb0c4; }
 /* Comfortable reading column; tighter gutters on phones */
 .block-container { max-width: 880px; padding-top: 2.2rem; padding-bottom: 4rem; }
 @media (max-width: 640px){ .block-container { padding-left: .9rem; padding-right: .9rem; padding-top: 1.2rem; } }
@@ -109,7 +111,7 @@ df = load_board()
 
 # ---- Hero ----
 st.markdown(
-    '<div class="hero-title">✈️ True Cost of Flying</div>'
+    '<div class="hero-title" role="heading" aria-level="1">✈️ True Cost of Flying</div>'
     '<p class="hero-sub">Every jet tracker shows you CO₂. Across aviation, CO₂ is only about '
     '<span class="hero-accent">a third</span> of the warming. Here is the <em>same flight</em> with its '
     'contrail warming added — computed with CoCiP physics, not guessed.</p>',
@@ -140,7 +142,7 @@ view["date"] = view["flight_id"].str.split("_").str[-1].str.replace(
 view = view.sort_values("combined", ascending=False)
 
 # ---- Owner leaderboard (aggregated across each owner's tracked flights) ----
-st.markdown('<div class="sec">Leaderboard — who warmed the most (fuel CO₂ + contrails)</div>',
+st.markdown('<div class="sec" role="heading" aria-level="2">Leaderboard — who warmed the most (fuel CO₂ + contrails)</div>',
             unsafe_allow_html=True)
 agg = (view.groupby("owner_label")
        .agg(combined=("combined", "sum"), flights=("combined", "size"),
@@ -150,7 +152,7 @@ agg = (view.groupby("owner_label")
 n = len(agg)
 rows_html = []
 for i, r in agg.iterrows():
-    tier = ('<span class="tier-dot" style="color:#e2503a">🔴 High</span>' if i < n / 3
+    tier = ('<span class="tier-dot" style="color:#ff7a63">🔴 High</span>' if i < n / 3
             else '<span class="tier-dot" style="color:#3fae6b">🟢 Low</span>' if i >= 2 * n / 3
             else '<span class="tier-dot" style="color:#e0a23a">🟠 Med</span>')
     chips = ""
@@ -176,7 +178,7 @@ PORTRAITS = [
      "fuel": "264.6 t", "contrail": "+90.2 t", "delta": "+34% across 7 flights", "wc": (1, 0, 6),
      "standout": "**Feb 14, NY→Palm Beach** (deep night) — crossed a ~130 km ice-supersaturated band → **+90 t contrail** (2.4× that flight's fuel). The *same NY→Palm Beach route* in December formed **nothing**. **6 of 7 flights: ~zero.**",
      "chips": ["in-domain 757 → most trustworthy (not flagged)", "across 7 flights contrails = +34% (NOT a 3×)", "90 t band 75–110 t · ~70% uncertainty", "trigger is ISSR-crossing, not just night"],
-     "framing": "Donald Trump's seven tracked flights were all on the same **in-domain Boeing 757-200** (N757AF, “Trump Force One”), cruising near 38,000 ft — below CoCiP's ~13 km cap — so these are among the **cleanest, least-caveated numbers in the dataset**. The fuel reality is blunt: **264.6 t of CO₂**, the largest fuel footprint of any *individual* tracked here (second overall only to the New England Patriots' team jet, ~668 t). Contrails tell almost the opposite story: six of seven flights formed essentially zero, and effectively all **90.2 t of contrail CO₂e** came from one deep-night NY→West Palm Beach run that crossed a ~130 km ice-supersaturated band over NJ/Delaware. Across all 7 flights that lifts his warming **+34%** on top of fuel (90.2 / 264.6) — squarely in the honest per-flight ~30–60% GWP100 range, **not** the ~3× whole-fleet ERF figure — and it is concentrated in one flight, not spread evenly. Tellingly, a *second* Trump flight was also deep-night yet formed zero: night alone isn't the trigger — **crossing ice-supersaturated air is** (night just means no daytime sunlight to offset the warming). Fuel CO₂ + contrails only; ~70% contrail uncertainty (90.2 t spans ~75–110 t)."},
+     "framing": "Donald Trump's seven tracked flights were all on the same **in-domain Boeing 757-200** (N757AF, “Trump Force One”), cruising near 38,000 ft — below CoCiP's ~13 km cap — so these are among the **cleanest, least-caveated numbers in the dataset**. The fuel reality is blunt: **264.6 t of CO₂** across the six — a heavy footprint (the Patriots' team 767s burned the most tracked fuel, ~668 t; Drake's 767 a touch more than Trump's). Contrails tell almost the opposite story: six of seven flights formed essentially zero, and effectively all **90.2 t of contrail CO₂e** came from one deep-night NY→West Palm Beach run that crossed a ~130 km ice-supersaturated band over NJ/Delaware. Across all 7 flights that lifts his warming **+34%** on top of fuel (90.2 / 264.6) — squarely in the honest per-flight ~30–60% GWP100 range, **not** the ~3× whole-fleet ERF figure — and it is concentrated in one flight, not spread evenly. Tellingly, a *second* Trump flight was also deep-night yet formed zero: night alone isn't the trigger — **crossing ice-supersaturated air is** (night just means no daytime sunlight to offset the warming). Fuel CO₂ + contrails only; ~70% contrail uncertainty (90.2 t spans ~75–110 t)."},
     {"name": "Bill Gates", "badge": "🌙 night (standout)", "ac": "Gulfstream G650ER",
      "fuel": "106.2 t", "contrail": "+6.9 t", "delta": "+6% net", "wc": (2, 1, 7),
      "standout": "**Dec 9, transcontinental redeye** (night, in-domain) — **+5.6 t (+32% of fuel)**, a stable ratio on a big fuel base. A daytime leg the same month *cooled* (−1.4 t).",
@@ -198,19 +200,21 @@ PORTRAITS = [
 def wc_bar(wc):
     """Tiny 3-segment proportion bar: warming / cooling / near-zero flight counts."""
     w, c, z = wc
+    if w + c + z == 0:
+        return ""
     base = "display:flex;align-items:center;justify-content:center;"
     seg = []
     if w:
-        seg.append(f'<div style="{base}flex:{w};background:#e2503a">{w} 🔥</div>')
+        seg.append(f'<div style="{base}flex:{w};background:#c43a26">{w} 🔥</div>')
     if c:
-        seg.append(f'<div style="{base}flex:{c};background:#4e8fd6">{c} ❄</div>')
+        seg.append(f'<div style="{base}flex:{c};background:#2f6aa8">{c} ❄</div>')
     if z:
         seg.append(f'<div style="{base}flex:{z};background:#33455c">{z} ○</div>')
     return ('<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin:.35rem 0;'
             'font-size:.68rem;font-weight:700;color:#fff">' + "".join(seg) + '</div>')
 
 
-st.markdown('<div class="sec">What contrails actually did for 5 famous flyers</div>', unsafe_allow_html=True)
+st.markdown('<div class="sec" role="heading" aria-level="2">What contrails actually did for 5 famous flyers</div>', unsafe_allow_html=True)
 st.markdown(
     "Burning jet fuel is the **certain** harm. Contrails are the **wildcard** — a *concentrated* effect "
     "triggered by crossing ice-supersaturated air (usually at night), **not a flat multiplier**. Six of "
@@ -222,7 +226,8 @@ pcols = st.columns(2)
 for i, p in enumerate(PORTRAITS):
     with pcols[i % 2]:
         with st.container(border=True):
-            st.markdown(f"**{p['name']}** &nbsp; <span class='chip'>{p['badge']}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span role='heading' aria-level='3' style='font-weight:700'>{p['name']}</span> "
+                        f"&nbsp; <span class='chip'>{p['badge']}</span>", unsafe_allow_html=True)
             st.caption(p["ac"])
             k1, k2 = st.columns(2)
             k1.metric("Fuel CO₂", p["fuel"])
@@ -238,7 +243,8 @@ for i, p in enumerate(PORTRAITS):
 
 # Drake — the clean in-domain anchor (full-width, the cleanest day/night proof in the set)
 with st.container(border=True):
-    st.markdown("**Drake** &nbsp; <span class='chip'>🧭 clean in-domain anchor</span> "
+    st.markdown("<span role='heading' aria-level='3' style='font-weight:700'>Drake</span> "
+                "&nbsp; <span class='chip'>🧭 clean in-domain anchor</span> "
                 "<span class='chip'>☀️ day cooled ↔ 🌙 night warmed</span>", unsafe_allow_html=True)
     st.caption("Boeing 767 · in-domain (below the cap) → the most trustworthy contrail numbers in the set")
     d1, d2, d3 = st.columns(3)
@@ -278,7 +284,7 @@ st.caption("Shown at GWP100 — a verified snapshot of the committed dataset (nu
            "−10 t daytime one.")
 
 # ---- Flight detail: the two-number reveal (the aha) ----
-st.markdown('<div class="sec">The reveal — same flight, two numbers</div>', unsafe_allow_html=True)
+st.markdown('<div class="sec" role="heading" aria-level="2">The reveal — same flight, two numbers</div>', unsafe_allow_html=True)
 view["flabel"] = (view["owner_label"] + " · " + view["date"] + " · "
                   + (view["combined"] / 1000).round(1).astype(str) + " t")
 choice = st.selectbox("Pick a tracked flight", view["flabel"].tolist(), label_visibility="collapsed")
@@ -286,28 +292,33 @@ row = view[view["flabel"] == choice].iloc[0]
 contrail = contrail_for(row, horizon)
 fuel = row["fuel_co2_kg"]
 combined = fuel + contrail
-lo = fuel + row["contrail_co2e_low"]
-hi = fuel + row["contrail_co2e_high"]
 pct = 100 * contrail / fuel if fuel else 0
+# The low/high band columns are GWP100-only; scale them to the selected horizon by the
+# central ratio so the band actually contains its own central value, and sort the
+# endpoints (for cooling flights `high` is more negative than `low`).
+c100 = row["contrail_co2e_central"]
+hr = (contrail / c100) if (horizon == "GWP20" and c100) else 1.0
+band_lo, band_hi = sorted([fuel + row["contrail_co2e_low"] * hr, fuel + row["contrail_co2e_high"] * hr])
 
-# A short, low-fuel flight that crossed one intense contrail patch yields a huge, UNSTABLE
-# ratio (tiny denominator). Headline the absolute tonnes, not the raw %, in that case.
-unstable = contrail > 0 and pct > 150
-if contrail > 0:
-    fuel_w = 100 * fuel / combined
-    bar = (f'<div class="bar"><span class="b-fuel" style="width:{fuel_w:.0f}%">Fuel {fuel/1000:,.0f} t</span>'
-           f'<span class="b-warm" style="width:{100-fuel_w:.0f}%">+{contrail/1000:,.0f} t contrails</span></div>'
+# An intense contrail on a small-fuel flight yields a huge, UNSTABLE ratio (tiny
+# denominator) — headline absolute tonnes, not the %, above 100%.
+unstable = contrail > 0 and pct > 100
+if contrail > 0 and pct >= 1:                       # meaningful warming
+    warm_w = max(3.0, 100 * contrail / combined)    # floor so a thin red sliver stays visible
+    bar = (f'<div class="bar"><span class="b-fuel" style="width:{100-warm_w:.0f}%">Fuel {fuel/1000:,.0f} t</span>'
+           f'<span class="b-warm" style="width:{warm_w:.0f}%">+{contrail/1000:,.1f} t</span></div>'
            f'<div class="barcap">The red slice is the warming no other tracker counts.</div>')
-    if unstable:
-        delta = f'<span class="delta-pill">+{contrail/1000:,.1f} t contrails — contrail-dominated short flight</span>'
-    else:
-        delta = f'<span class="delta-pill">contrails add +{pct:.0f}%</span>'
-    combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
-else:
+    delta = (f'<span class="delta-pill">+{contrail/1000:,.1f} t contrails — contrail-dominated</span>' if unstable
+             else f'<span class="delta-pill">contrails add +{pct:.0f}%</span>')
+elif contrail < 0 and pct <= -1:                    # meaningful cooling
     bar = ('<div class="bar"><span class="b-fuel" style="width:100%">Fuel '
-           f'{fuel/1000:,.0f} t — no net-warming contrail</span></div>')
-    delta = f'<span class="delta-pill delta-cool">contrails net {pct:+.0f}% (cooling / none)</span>'
-    combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
+           f'{fuel/1000:,.0f} t — contrails net-cooled this flight</span></div>')
+    delta = f'<span class="delta-pill delta-cool">contrails cooled by {abs(contrail)/1000:,.1f} t ({pct:+.0f}%)</span>'
+else:                                               # negligible (|contrail| < ~1% of fuel)
+    bar = ('<div class="bar"><span class="b-fuel" style="width:100%">Fuel '
+           f'{fuel/1000:,.0f} t — no significant contrail formed</span></div>')
+    delta = '<span class="delta-pill" style="background:#24344d;color:#c7d6e6">contrails: negligible (&lt;1%)</span>'
+combined_val = f'{combined/1000:,.1f} <small>t CO₂e</small>'
 
 st.markdown(
     f'<div class="reveal"><div class="reveal-nums">'
@@ -317,7 +328,7 @@ st.markdown(
     f'<div class="num">{combined_val}</div>{delta}</div>'
     f'</div>{bar}</div>',
     unsafe_allow_html=True)
-st.caption(f"{horizon} · uncertainty band {t(lo)}–{t(hi)} · contrail term carries ~70% uncertainty (IPCC "
+st.caption(f"{horizon} · uncertainty band {t(band_lo)}–{t(band_hi)} · contrail term carries ~70% uncertainty (IPCC "
            f"'low confidence'). " + ("Above CoCiP's ~13 km cap → likely under-counted. " if row["bizjet_alt_flag"] else "")
            + ("This is a short, low-fuel flight where one intense contrail patch dominates — so we show the "
               "absolute tonnes, not the unstable +%, which here would read misleadingly high." if unstable else ""))
@@ -332,6 +343,10 @@ if gj and gj["features"]:
         color = ([220, 60, 40] if s > 0.05 else [80, 110, 200] if s < -0.05 else [130, 130, 140])
         segs.append({"path": [[c[0][0], c[0][1]], [c[1][0], c[1][1]]], "color": color})
     sd = pd.DataFrame(segs)
+    shares = [f["properties"].get("ef_share", 0.0) for f in gj["features"]]
+    n_warm = sum(1 for s in shares if s > 0.05)
+    n_cool = sum(1 for s in shares if s < -0.05)
+    n_neut = len(shares) - n_warm - n_cool
     lons = [pt[0] for seg in sd["path"] for pt in seg]
     lats = [pt[1] for seg in sd["path"] for pt in seg]
     center_lon, center_lat = sum(lons) / len(lons), sum(lats) / len(lats)
@@ -343,13 +358,15 @@ if gj and gj["features"]:
         initial_view_state=pdk.ViewState(latitude=center_lat, longitude=center_lon, zoom=4, pitch=30),
         map_provider=None, map_style=None,
         tooltip={"text": "red = contrail warming along this segment"}), height=420)
-    st.caption("Track coloured by where contrail warming occurred (🔴 red) vs none (grey) vs cooling (🔵 blue). "
-               "Fuel CO₂ is roughly uniform; contrail warming is concentrated where the jet crossed humid, icy air.")
+    # Text alternative to the colour-only map (a11y): the same warm/cool/neutral split in words.
+    st.caption(f"Track coloured by where contrail warming occurred (🔴 red) vs none (grey) vs cooling (🔵 blue) — "
+               f"**{n_warm} warming · {n_cool} cooling · {n_neut} neutral** of {len(shares)} segments. "
+               f"Fuel CO₂ is roughly uniform; contrail warming is concentrated where the jet crossed humid, icy air.")
 
 # ---- Night transatlantic widebodies: the regime where contrails dominate ----
 comp = load_comparators()
 if comp is not None and len(comp):
-    st.markdown('<div class="sec">🌙 The other extreme — night transatlantic widebodies</div>',
+    st.markdown('<div class="sec" role="heading" aria-level="2">🌙 The other extreme — night transatlantic widebodies</div>',
                 unsafe_allow_html=True)
     st.markdown(
         "The jets above mostly fly **short daytime US/EU legs**, where daytime contrails often *cool* — so on "
@@ -397,7 +414,9 @@ with st.expander("Validation — does this agree with published science?"):
     n_forming = int((df["contrail_ef_joules"].abs() >= 1e6).sum())
     n_warming = int((df["contrail_co2e_central"] > 0).sum())
     in_domain = df[~df["bizjet_alt_flag"]]
-    peak = in_domain["contrail_pct_of_fuel"].max()
+    # stable-denominator peak only — the raw max is a tiny-fuel flight (+463%) that the
+    # reveal itself refuses to headline; reporting it here would contradict the 33–63% band.
+    peak = in_domain[in_domain["contrail_pct_of_fuel"].between(1, 100)]["contrail_pct_of_fuel"].max()
     st.markdown(
         f"We replaced a flat ~3× multiplier with flight-specific CoCiP physics — so the fair question is "
         f"*does it reproduce the literature?* These numbers are computed live from the {n_tot} committed flights:\n\n"
@@ -409,10 +428,12 @@ with st.expander("Validation — does this agree with published science?"):
         f"- **The power-law is visible inside single flights:** a single track segment can carry ~all of a flight's "
         f"energy forcing — reproducing Teoh's '2.7% of flights = 80% of forcing' at per-flight scale. It's why we "
         f"show *tiers*, not a precise 1..N rank. ✅\n"
-        f"- **Per-flight ratio when ISSR is crossed in-domain:** reaches **+{peak:.0f}%** here (and 40–52% in the "
-        f"Phase 0.5 optimal-altitude case) — the lower-to-middle of the published **33–63% (GWP100)** band. ✅\n"
+        f"- **Per-flight ratio when ISSR is crossed in-domain (stable fuel base):** reaches **+{peak:.0f}%** here "
+        f"(Musk, Gates), the lower edge of the published **33–63% (GWP100)** band — and 40–52% in the Phase 0.5 "
+        f"optimal-altitude case. Short low-fuel flights produce *unstable* >100% ratios (Schmidt +463%) that we "
+        f"deliberately do **not** headline. ✅\n"
         f"- **Day vs night drives the sign:** night contrails warm (100% in our data), many daytime contrails cool. "
-        f"Night transatlantic widebodies aggregate **+57%** vs ~0% for daytime private jets — same pipeline. ✅\n"
+        f"Night transatlantic widebodies aggregate **+57% (GWP100)** vs ~0% for daytime private jets — same pipeline. ✅\n"
         f"- **Where we diverge (honestly):** the daytime private-jet *aggregate* sits far below the fleet 33–63% "
         f"because daytime cooling cancels night warming and the ~13 km bizjet cap + ERA5 dry bias push our numbers "
         f"**down** — so the tool errs toward *under*-stating. \n\n"
