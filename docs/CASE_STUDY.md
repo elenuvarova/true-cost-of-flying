@@ -54,10 +54,10 @@ Two hard constraints shaped the architecture:
 
 ## 4. The solution
 
-**Three surfaces, one page:**
-1. **Tiered leaderboard** — owners ranked by combined warming, with visible confidence chips (proxy-type, above-CoCiP-cap).
-2. **The reveal** — pick a flight → Fuel CO₂ vs Combined CO₂e, a proportion bar showing the red "contrail" slice no tracker counts, the **+X%** uplift, a **GWP100/GWP20 toggle** whose motion *is* the teaching moment, and an uncertainty band.
-3. **The flight-track map** — coloured per segment by where contrail warming actually occurred (red) vs none (grey) vs cooling (blue), because the warming is concentrated where the jet crossed humid, icy air.
+**A flyer-first explorer, one page.** The product is built around a single interaction — *pick a famous flyer, pick one of their flights, see the same flight as two numbers* — wrapped in three surfaces:
+1. **Tiered leaderboard** — the 11 owners ranked by combined warming (fuel CO₂ + contrails), each row a magnitude bar with visible confidence chips (proxy-type, above-CoCiP-cap).
+2. **The flyer explorer** — pick a flyer (the 5 headliners carry verified, adversarially fact-checked portraits; the other 6 show stats computed straight from the data), see their whole-fleet contrail portrait (fuel total, net contrail, a warmed/cooled/near-zero split), then pick one of *their* flights from a scoped list that defaults to their most telling one. This **merges the "celebrity hook" and the "reveal" into one coherent flow** instead of two disconnected surfaces — the structural fix that ties the product back to its job-to-be-done.
+3. **The reveal + map** — for the chosen flight: Fuel CO₂ vs Combined CO₂e in oversized numerals, a proportion bar showing the red "contrail" slice no tracker counts, the **+X%** uplift (or absolute tonnes when contrails exceed fuel), a **GWP100/GWP20 toggle** whose motion *is* the teaching moment, an uncertainty band, and a track coloured per segment by where the warming actually occurred (red) vs none (grey) vs cooling (blue).
 
 The honest framing is enforced everywhere: the combined number is **fuel-CO₂ + contrails only** (≈1.3–1.6× fuel at GWP100), never dressed up as the aviation-wide ~3× (which includes NOx/H₂O/aerosols). See `docs/IMPLEMENTATION_PLAN.md` §6 for the framing rule.
 
