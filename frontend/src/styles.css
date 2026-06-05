@@ -68,7 +68,8 @@ section{ position:relative; }
 .hzrow{ display:flex; flex-wrap:wrap; align-items:center; gap:.7rem 1rem; margin-top:1.3rem; }
 .hztoggle{ display:inline-flex; border:1px solid var(--hair); border-radius:999px; padding:3px; background:rgba(255,255,255,.03); }
 .hztoggle button{ font-family:var(--sans); font-weight:700; font-size:.84rem; color:var(--muted); background:transparent;
-  border:0; border-radius:999px; padding:.42rem 1rem; cursor:pointer; transition:all .25s; }
+  border:0; border-radius:999px; padding:.42rem 1.05rem; min-height:40px; display:inline-flex; align-items:center;
+  cursor:pointer; transition:all .25s; touch-action:manipulation; }
 .hztoggle button.on{ color:#0a1422; background:linear-gradient(95deg,var(--fuel),var(--warm)); }
 .hz-note{ color:var(--muted); font-size:.84rem; max-width:46ch; line-height:1.45; margin:0; }
 .fp-key{ color:var(--muted); font-weight:400; }
@@ -148,7 +149,8 @@ section{ position:relative; }
 .pills{ display:flex; flex-wrap:wrap; gap:.55rem; margin:2rem 0 .5rem; }
 .pill{ font-family:var(--sans); font-weight:600; font-size:.92rem; color:var(--ink-2);
   background:rgba(255,255,255,.03); border:1px solid var(--hair); border-radius:999px;
-  padding:.5rem 1rem; cursor:pointer; transition:all .25s; line-height:1; }
+  padding:.5rem 1.05rem; min-height:44px; display:inline-flex; align-items:center;
+  cursor:pointer; transition:all .25s; line-height:1; touch-action:manipulation; }
 .pill:hover{ border-color:#3a5a80; color:#fff; }
 .pill.on{ color:#0a1422; background:linear-gradient(95deg,var(--fuel),var(--warm)); border-color:transparent; font-weight:700; }
 .pill .star{ opacity:.8; margin-right:.3em; }
@@ -174,7 +176,8 @@ section{ position:relative; }
 .flight-pick label{ color:var(--muted); font-size:.78rem; letter-spacing:.04em; }
 .fp{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.6rem; }
 .fp button{ font-size:.82rem; color:var(--ink-2); background:rgba(255,255,255,.03); border:1px solid var(--hair);
-  border-radius:10px; padding:.45rem .7rem; cursor:pointer; transition:all .2s; font-variant-numeric:tabular-nums; }
+  border-radius:10px; padding:.5rem .8rem; min-height:42px; display:inline-flex; align-items:center;
+  cursor:pointer; transition:all .2s; font-variant-numeric:tabular-nums; touch-action:manipulation; }
 .fp button:hover{ border-color:#3a5a80; }
 .fp button.on{ border-color:var(--warm); color:#fff; background:rgba(239,106,67,.1); }
 
