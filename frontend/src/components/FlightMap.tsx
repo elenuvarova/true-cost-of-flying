@@ -107,6 +107,7 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
       pitch: 46,
       bearing: MAP_BEARING,
       attributionControl: { compact: true },
+      interactive: false, // decorative fly-along; keeps role="img"+aria-label honest (no hidden pan/zoom controls)
     })
     const overlay = new MapboxOverlay({ interleaved: true, layers: [] })
     map.addControl(overlay as any)

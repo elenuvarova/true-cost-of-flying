@@ -71,7 +71,7 @@ section{ position:relative; }
   border:0; border-radius:999px; padding:.42rem 1rem; cursor:pointer; transition:all .25s; }
 .hztoggle button.on{ color:#0a1422; background:linear-gradient(95deg,var(--fuel),var(--warm)); }
 .hz-note{ color:var(--muted); font-size:.84rem; max-width:46ch; line-height:1.45; margin:0; }
-.fp-key{ color:var(--faint); font-weight:400; }
+.fp-key{ color:var(--muted); font-weight:400; }
 
 /* ============================================================ HERO */
 .hero{ min-height:100svh; display:flex; flex-direction:column; justify-content:center; align-items:center;
