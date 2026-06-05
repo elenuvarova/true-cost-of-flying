@@ -6,7 +6,7 @@
   --bg:#0a1422; --bg-2:#0c1a2c; --panel:#11233a; --panel-2:#0e1d31;
   --line:#1d3550; --hair:#22405f;
   --ink:#eef3f9; --ink-2:#cdddee; --muted:#8ba2b9; --faint:#5d7390;
-  --fuel:#e8b24a; --warm:#ef6a43; --warm-deep:#c81e3a; --cool:#5aa0e0;
+  --fuel:#e8b24a; --warm:#ef6a43; --warm-deep:#c81e3a; --cool:#4fb0f5;
   --wrap:1180px; --pad:clamp(1.15rem,4.2vw,3.2rem);
   --r:18px;
   --sans:'Space Grotesk',system-ui,-apple-system,sans-serif;
@@ -30,7 +30,7 @@ h1,h2,h3{ margin:0; font-family:var(--sans); font-weight:700; letter-spacing:-.0
     radial-gradient(120% 60% at 50% -12%, rgba(239,106,67,.16), transparent 56%),
     radial-gradient(75% 42% at 12% -6%, rgba(232,178,74,.11), transparent 60%),
     radial-gradient(80% 46% at 90% 0%, rgba(255,120,90,.13), transparent 60%),
-    radial-gradient(90% 60% at 50% 108%, rgba(90,160,224,.08), transparent 60%);
+    radial-gradient(90% 60% at 50% 108%, rgba(79,176,245,.12), transparent 60%);
   animation:drift 28s ease-in-out infinite alternate; }
 @keyframes drift{ from{ transform:translate3d(-1.4%,-1%,0) scale(1);} to{ transform:translate3d(1.4%,1.2%,0) scale(1.05);} }
 .bg-grain{ position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.04; mix-blend-mode:overlay;

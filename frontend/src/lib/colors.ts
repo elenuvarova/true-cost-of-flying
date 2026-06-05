@@ -5,7 +5,7 @@ export type RGB = [number, number, number]
 export const BG: RGB = [10, 20, 34]
 export const AMBER: RGB = [232, 178, 74] // fuel CO₂ / neutral (gold)
 export const RED: RGB = [214, 38, 60] // contrail warming (crimson)
-export const BLUE: RGB = [90, 160, 224] // contrail cooling
+export const BLUE: RGB = [79, 176, 245] // contrail cooling
 
 export const lerp = (a: RGB, b: RGB, t: number): RGB => [
   Math.round(a[0] + (b[0] - a[0]) * t),

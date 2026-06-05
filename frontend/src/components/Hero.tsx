@@ -10,8 +10,8 @@ export default function Hero() {
       <svg className="hero-plane" viewBox="0 0 300 96" fill="none" aria-hidden="true">
         <defs>
           <linearGradient id="trailH" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopColor="#5aa0e0" stopOpacity="0" />
-            <stop offset=".4" stopColor="#5aa0e0" stopOpacity=".5" />
+            <stop offset="0" stopColor="#4fb0f5" stopOpacity="0" />
+            <stop offset=".4" stopColor="#4fb0f5" stopOpacity=".5" />
             <stop offset=".78" stopColor="#ef6a43" />
             <stop offset="1" stopColor="#e8b24a" />
           </linearGradient>
