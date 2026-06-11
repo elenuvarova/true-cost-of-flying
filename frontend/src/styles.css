@@ -38,6 +38,17 @@ h1,h2,h3{ margin:0; font-family:var(--sans); font-weight:700; letter-spacing:-.0
   background-size:200px 200px; }
 .content{ position:relative; z-index:1; }
 
+/* ---- A · ambient fleet: faint planes drifting across the page, each inking a contrail ---- */
+.planefield{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.pf-lane{ position:absolute; left:0; display:flex; align-items:center; will-change:transform;
+  animation-name:pf-cross; animation-timing-function:linear; animation-iteration-count:infinite; }
+@keyframes pf-cross{ from{ transform:translateX(-24vw);} to{ transform:translateX(122vw);} }
+.pf-craft{ display:flex; align-items:center; transform-origin:center; }
+.pf-trail{ display:block; width:178px; height:2px; border-radius:2px; margin-right:-1px;
+  background:linear-gradient(90deg, transparent, rgba(150,150,150,.18) 38%, rgba(180,210,245,.62)); }
+.pf-plane{ width:19px; height:19px; color:rgba(216,232,250,.9); transform:rotate(90deg);
+  filter:drop-shadow(0 0 5px rgba(120,170,230,.35)); }
+
 /* scroll-progress rail (amber→red) */
 .rail{ position:fixed; top:0; left:0; height:3px; z-index:50;
   background:linear-gradient(90deg,var(--fuel),var(--warm),var(--warm-deep)); width:0%;
@@ -59,7 +70,7 @@ section{ position:relative; }
 /* reveal */
 .reveal{ opacity:0; transform:translateY(22px); transition:opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
 .reveal.in{ opacity:1; transform:none; }
-@media (prefers-reduced-motion:reduce){ .reveal{ opacity:1; transform:none; transition:none; } .bg-field{ animation:none; } .bg-grain{ display:none; } .scrollcue .dot{ animation:none; } }
+@media (prefers-reduced-motion:reduce){ .reveal{ opacity:1; transform:none; transition:none; } .bg-field{ animation:none; } .bg-grain{ display:none; } .scrollcue .dot{ animation:none; } .planefield{ display:none; } }
 
 /* focus + screen-reader-only + GWP toggle */
 :focus-visible{ outline:2px solid var(--cool); outline-offset:2px; border-radius:6px; }
@@ -74,22 +85,26 @@ section{ position:relative; }
 .hz-note{ color:var(--muted); font-size:.84rem; max-width:46ch; line-height:1.45; margin:0; }
 .fp-key{ color:var(--muted); font-weight:400; }
 
-/* ============================================================ HERO */
-.hero{ min-height:100svh; display:flex; flex-direction:column; justify-content:center; align-items:center;
-  text-align:center; padding:6rem 0 3rem; }
-.hero h1{ font-size:clamp(2.6rem,11vw,7rem); margin:.9rem 0 0; }
-.hero .g{ font-family:var(--serif); font-style:italic; font-weight:600; letter-spacing:-.01em;
+/* ============================================================ HERO
+   Pinned stage: the section is taller than the screen; the inner pin sticks
+   while scroll scrubs the plane across the whole sky ("Scroll to fly" is literal). */
+.hero-stage{ height:230svh; position:relative; }
+.hero-pin{ position:sticky; top:0; height:100svh; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; }
+.hero-sky{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.hero-pin > canvas{ z-index:0; } /* 3D jet sits above the SVG sky but below the copy (z-index:1) */
+.sky-glow{ opacity:.3; filter:blur(9px); }
+.sky-mid{ opacity:.95; }
+.sky-core{ filter:drop-shadow(0 0 7px rgba(255,236,214,.9)); }
+.sky-jet{ filter:drop-shadow(0 3px 12px rgba(255,170,120,.6)); }
+.hero-copy{ position:relative; z-index:1; text-align:center;
+  display:flex; flex-direction:column; align-items:center; padding-block:4rem; }
+.hero-copy h1{ font-size:clamp(2.6rem,11vw,7rem); margin:.9rem 0 0; }
+.hero-copy .g{ font-family:var(--serif); font-style:italic; font-weight:600; letter-spacing:-.01em;
   background:linear-gradient(95deg,var(--fuel),var(--warm) 55%,var(--fuel)); background-size:220% 100%;
   -webkit-background-clip:text; background-clip:text; color:transparent;
   filter:drop-shadow(0 3px 26px rgba(239,106,67,.28)); animation:heat 9s ease-in-out infinite; }
 @keyframes heat{ 0%,100%{ background-position:0% 50%;} 50%{ background-position:100% 50%;} }
-.hero-plane{ width:clamp(220px,42vw,360px); height:auto; margin:1.1rem auto .4rem; overflow:visible; display:block; }
-.hero-plane .trail{ stroke-dasharray:340; stroke-dashoffset:340; animation:draw 1.6s cubic-bezier(.4,0,.2,1) .35s forwards; }
-.hero-plane .jet{ opacity:0; transform-box:fill-box; transform-origin:center;
-  animation:jetin .5s cubic-bezier(.2,.7,.2,1) 1.15s forwards; filter:drop-shadow(0 3px 9px rgba(255,170,120,.55)); }
-@keyframes draw{ to{ stroke-dashoffset:0; } }
-@keyframes jetin{ from{ opacity:0; transform:scale(.5);} to{ opacity:1; transform:scale(1);} }
-@media (prefers-reduced-motion:reduce){ .hero-plane .trail{ animation:none; stroke-dashoffset:0;} .hero-plane .jet{ animation:none; opacity:1;} .hero .g{ animation:none; } }
 .hero-sub{ color:var(--ink-2); font-size:clamp(1.05rem,2.1vw,1.3rem); line-height:1.55; max-width:min(50ch,90vw);
   margin:1.4rem auto 0; }
 .hero-sub .em{ color:var(--ink); font-weight:600;
@@ -98,6 +113,12 @@ section{ position:relative; }
   display:flex; flex-direction:column; align-items:center; gap:.5rem; }
 .scrollcue .dot{ width:1px; height:34px; background:linear-gradient(var(--warm),transparent); animation:cue 1.8s ease-in-out infinite; }
 @keyframes cue{ 0%,100%{ transform:scaleY(.4); opacity:.5; transform-origin:top;} 50%{ transform:scaleY(1); opacity:1; transform-origin:top;} }
+@media (max-width:720px){ .hero-stage{ height:190svh; } }
+@media (prefers-reduced-motion:reduce){
+  .hero-stage{ height:auto; }
+  .hero-pin{ position:relative; }
+  .hero-copy .g{ animation:none; }
+}
 
 /* ============================================================ LEADERBOARD */
 .lb{ padding:6rem 0; }

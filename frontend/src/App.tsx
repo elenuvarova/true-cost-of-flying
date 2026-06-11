@@ -4,6 +4,7 @@ import { Flight, Horizon, aggregateOwners, loadFlights } from './lib/data'
 import Hero from './components/Hero'
 import Leaderboard from './components/Leaderboard'
 import Explorer from './components/Explorer'
+import PlaneField from './components/PlaneField'
 
 export default function App() {
   const [flights, setFlights] = useState<Flight[]>([])
@@ -24,6 +25,7 @@ export default function App() {
     <>
       <div className="bg-field" />
       <div className="bg-grain" />
+      <PlaneField />
       <div className="rail" style={{ width: `${progress * 100}%` }} />
 
       <main className="content">
@@ -53,7 +55,9 @@ export default function App() {
             The total shown is <b style={{ color: 'var(--ink-2)' }}>fuel CO₂ + contrails only</b> — it omits NOx, water
             vapour and aerosols, so it is not the aviation-wide ~3× figure. Contrail warming carries ~70% uncertainty
             (IPCC “low confidence”). Aircraft, not people. Tracks from adsb.lol (ODbL-1.0) · ERA5 · OpenAP · pycontrails
-            CoCiP. Non-commercial / educational.
+            CoCiP. 3D jet: “Airplane” by jeremy via{' '}
+            <a href="https://poly.pizza/m/9Ev6pklkSYp" target="_blank" rel="noreferrer">Poly Pizza</a> (CC-BY).
+            Non-commercial / educational.
           </div>
         </footer>
       </main>
