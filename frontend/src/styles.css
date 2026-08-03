@@ -250,3 +250,11 @@ footer .wrap{ border-top:1px solid var(--hair); padding-top:2rem; }
   .oneseg-stage{ height:auto; }
   .oneseg-pin{ position:relative; height:auto; padding-block:2rem; }
 }
+
+/* altitude / EF profile under the explorer map */
+.profile{ border-top:1px solid var(--hair); padding:1.1rem 1.7rem 1.5rem; background:var(--panel-2); }
+.profile-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.6rem 1rem; }
+.profile-head .hztoggle button{ font-size:.78rem; padding:.36rem .85rem; min-height:40px; }
+.profile-read{ color:var(--muted); font-size:.8rem; font-variant-numeric:tabular-nums; }
+.profile svg{ width:100%; height:clamp(90px,14vh,150px); display:block; margin-top:.8rem; }
+.profile-scrub{ width:100%; margin-top:.5rem; accent-color:var(--warm); height:44px; touch-action:manipulation; }
