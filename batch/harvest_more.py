@@ -13,11 +13,12 @@ Does NOT touch leaderboard.parquet or owners.csv.
 Usage: python batch/harvest_more.py 2024-12-14 2024-12-20 ...
        (dates whose raw traces already exist under data/raw/traces/)
 """
-import csv, glob, math, os, sys
+import csv, glob, os, sys
 import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from src.solar import NIGHT_ELEV, solar_elev
 from src.tracks import load_trace, longest_flight
 from src.fuel import fuel_and_co2, resolve_type
 from src.era5 import load_arco
@@ -31,7 +32,6 @@ RAW = os.path.join(ROOT, "data", "raw", "traces")
 OWNERS_CSV = os.path.join(ROOT, "data", "reference", "owners.csv")
 LOG = os.path.join(ROOT, "data", "reference", "harvest_more_log.csv")
 PLS = [150, 175, 200, 225, 250, 300, 350]
-NIGHT_ELEV = -6.0          # solar elevation below this = night
 NIGHT_SHARE_MIN = 0.5      # require >= this fraction of cruise waypoints in night
 CRUISE_MIN_M = 8000.0      # only consider high-altitude (cruise) waypoints for the filter
 
@@ -41,19 +41,6 @@ os.makedirs(COCDIR, exist_ok=True)
 
 with open(OWNERS_CSV) as f:
     OWNERS = {r["hex"].lower(): r for r in csv.DictReader(f)}
-
-
-def solar_elev(lat, lon, when):  # when = pandas UTC Timestamp
-    n = when.dayofyear; frac = (when.hour + when.minute / 60) / 24
-    g = 2 * math.pi / 365 * (n - 1 + frac - 0.5)
-    dec = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g)
-           - 0.006758 * math.cos(2 * g) + 0.000907 * math.sin(2 * g))
-    eqt = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
-                    - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
-    tst = (when.hour * 60 + when.minute) + eqt + 4 * lon
-    ha = math.radians(tst / 4 - 180); la = math.radians(lat)
-    return math.degrees(math.asin(max(-1, min(1,
-        math.sin(la) * math.sin(dec) + math.cos(la) * math.cos(dec) * math.cos(ha)))))
 
 
 def night_share(fl):

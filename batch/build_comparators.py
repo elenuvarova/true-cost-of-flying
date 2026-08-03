@@ -14,7 +14,6 @@ Usage:
 import csv
 import glob
 import json
-import math
 import os
 import sys
 
@@ -22,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from src.solar import solar_elev
 from src.tracks import load_trace, longest_flight
 from src.fuel import fuel_and_co2, resolve_type
 from src.era5 import load_arco
@@ -47,21 +47,6 @@ COMPARATOR_MAX_GAP_S = 5 * 3600
 
 with open(COMPARATORS_CSV) as f:
     REG = {r["hex"].lower(): r for r in csv.DictReader(f)}
-
-
-def solar_elev(lat, lon, when):
-    n = when.dayofyear
-    frac = (when.hour + when.minute / 60) / 24
-    g = 2 * math.pi / 365 * (n - 1 + frac - 0.5)
-    dec = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g)
-           - 0.006758 * math.cos(2 * g) + 0.000907 * math.sin(2 * g))
-    eqt = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
-                    - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
-    tst = (when.hour * 60 + when.minute) + eqt + 4 * lon
-    ha = math.radians(tst / 4 - 180)
-    la = math.radians(lat)
-    return math.degrees(math.asin(max(-1, min(1, math.sin(la) * math.sin(dec)
-                                              + math.cos(la) * math.cos(dec) * math.cos(ha)))))
 
 
 def decimate(df, n=MAX_VTX):
