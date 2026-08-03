@@ -20,6 +20,8 @@ export interface Flight {
   proxy_type_flag: boolean
   coverage_gap_flag: boolean
   tier: string
+  night_pct_of_waypoints: number | null
+  night_class: 'night' | 'mixed' | 'day' | null
 }
 
 export interface OwnerAgg {
@@ -103,6 +105,58 @@ export function standoutFlight(flights: Flight[]): Flight {
   return flights.reduce((best, f) =>
     Math.abs(f.contrail_co2e_central) > Math.abs(best.contrail_co2e_central) ? f : best,
   )
+}
+
+// ---- ranking metrics ----------------------------------------------------
+// Switching the metric reshuffles the board, and that reshuffle IS the thesis:
+// fuel CO2 alone tells a different story from fuel + contrails.
+export type Metric = 'fuel' | 'combined' | 'contrail'
+
+export const METRIC_LABEL: Record<Metric, string> = {
+  fuel: 'Fuel CO₂',
+  combined: 'Combined CO₂e',
+  contrail: 'Contrails only',
+}
+
+export function metricT(o: OwnerAgg, m: Metric): number {
+  return m === 'fuel' ? o.fuelT : m === 'contrail' ? o.contrailT : o.combinedT
+}
+
+// Signed sort: a net-cooling owner belongs at the bottom of "contrails only",
+// not at the top by magnitude. Tier travels with the owner and is NOT
+// recomputed from the new position — tier colour means "share of combined
+// warming", and that meaning must not change when you look at a sub-metric.
+export function rankByMetric(owners: OwnerAgg[], m: Metric): OwnerAgg[] {
+  return [...owners].sort((a, b) => metricT(b, m) - metricT(a, m))
+}
+
+export interface ReshuffleStats {
+  moved: number
+  total: number
+  biggest: { owner: string; from: number; to: number } | null
+}
+
+// How many owners change position between two metrics, and who moves furthest.
+// Positions are 1-based because the caption says them out loud.
+export function reshuffleStats(owners: OwnerAgg[], from: Metric, to: Metric): ReshuffleStats {
+  const posIn = (m: Metric) => new Map(rankByMetric(owners, m).map((o, i) => [o.owner, i + 1]))
+  const a = posIn(from)
+  const b = posIn(to)
+  let moved = 0
+  let biggest: ReshuffleStats['biggest'] = null
+  let bestDelta = 0
+  for (const o of owners) {
+    const pa = a.get(o.owner)!
+    const pb = b.get(o.owner)!
+    const d = Math.abs(pa - pb)
+    if (d === 0) continue
+    moved++
+    if (d > bestDelta) {
+      bestDelta = d
+      biggest = { owner: o.owner, from: pa, to: pb }
+    }
+  }
+  return { moved, total: owners.length, biggest }
 }
 
 // Featured flyers — verified, fact-checked copy carried over from the audited dataset.
