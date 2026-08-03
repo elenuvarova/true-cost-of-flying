@@ -16,3 +16,8 @@ __pycache__/
 .venv-app/
 _legacy_node_template/
 .env
+
+# agent scratch: worktrees + subagent-driven-development ledgers
+.claude/
+.superpowers/
+.pytest_cache/

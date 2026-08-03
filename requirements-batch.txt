@@ -98,6 +98,8 @@ idna==3.17
     # via
     #   requests
     #   yarl
+iniconfig==2.3.0
+    # via pytest
 kiwisolver==1.5.0
     # via matplotlib
 locket==1.0.0
@@ -146,6 +148,8 @@ pillow==12.2.0
     # via matplotlib
 platformdirs==4.10.0
     # via -r requirements-batch.in
+pluggy==1.6.0
+    # via pytest
 propcache==0.5.2
     # via
     #   aiohttp
@@ -172,9 +176,13 @@ pycontrails==0.63.1
     # via -r requirements-batch.in
 pycparser==3.0
     # via cffi
+pygments==2.20.0
+    # via pytest
 pyparsing==3.3.2
     # via matplotlib
 pyproj==3.7.2
+    # via -r requirements-batch.in
+pytest==9.1.1
     # via -r requirements-batch.in
 python-dateutil==2.9.0.post0
     # via

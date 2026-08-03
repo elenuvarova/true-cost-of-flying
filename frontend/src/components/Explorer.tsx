@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import {
   Flight,
   Horizon,
@@ -6,12 +6,16 @@ import {
   PORTRAITS,
   contrailKg,
   flightsFor,
+  loadTrack,
   short,
   standoutFlight,
   tonnes,
 } from '../lib/data'
+import { TrackData, parseTrack } from '../lib/track'
 import { rgbCss, AMBER, RED, BLUE } from '../lib/colors'
 import Reveal from './Reveal'
+import HorizonToggle from './HorizonToggle'
+import Profile from './charts/Profile'
 import Appear from './Appear'
 
 // Code-split the heavy deck.gl/maplibre map off the hero's critical path.
@@ -61,13 +65,34 @@ export default function Explorer({
 
   const [ownerSel, setOwner] = useState('')
   const [fid, setFid] = useState<string | undefined>(undefined)
+  const [track, setTrack] = useState<TrackData | null>(null)
+  // -1 = "let the map animate itself"; >=0 = the profile scrubber is driving.
+  const [active, setActive] = useState(-1)
 
-  if (!flights.length || !ordered.length) return <section className="exp wrap" id="explore" />
-  const owner = ownerSel && owners.includes(ownerSel) ? ownerSel : ordered[0]
+  // NOTE: every hook must sit ABOVE the early return below. If you see
+  // "rendered fewer hooks than expected", something has drifted under it.
+  const owner = ownerSel && owners.includes(ownerSel) ? ownerSel : (ordered[0] ?? '')
+  const myFlights = owner ? flightsFor(flights, owner, horizon) : []
+  const sel = myFlights.length ? myFlights.find((f) => f.flight_id === fid) ?? standoutFlight(myFlights) : null
+  const selId = sel?.flight_id
 
-  const myFlights = flightsFor(flights, owner, horizon)
-  const standout = standoutFlight(myFlights)
-  const sel = myFlights.find((f) => f.flight_id === fid) ?? standout
+  // Load the selected flight's track for the profile chart, and hand the map
+  // back its own animation whenever the flight changes.
+  useEffect(() => {
+    if (!selId) return
+    let alive = true
+    setActive(-1)
+    setTrack(null)
+    loadTrack(selId).then((gj) => {
+      if (alive && gj) setTrack(parseTrack(gj))
+    })
+    return () => {
+      alive = false
+    }
+  }, [selId])
+
+  if (!flights.length || !ordered.length || !sel) return <section className="exp wrap" id="explore" />
+
   const portrait = PORTRAITS[owner]
   const st = ownerStats(myFlights, horizon)
   const ct = st.contrailT
@@ -77,7 +102,7 @@ export default function Explorer({
   return (
     <section className="exp wrap" id="explore">
       <Appear>
-        <div className="eyebrow">02 — The explorer</div>
+        <div className="eyebrow">04 — The explorer</div>
         <h2 className="sec-head" style={{ marginTop: '.6rem' }}>
           Pick a flyer, then the{' '}
           <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 600, color: 'var(--warm)' }}>
@@ -88,19 +113,11 @@ export default function Explorer({
           Fuel is the certain harm. Contrails are the wildcard — a concentrated effect from crossing ice-supersaturated
           air, not a flat multiplier. Usually near zero, occasionally a lot.
         </p>
-        <div className="hzrow">
-          <div className="hztoggle" role="group" aria-label="Time horizon">
-            {(['GWP100', 'GWP20'] as Horizon[]).map((h) => (
-              <button key={h} className={h === horizon ? 'on' : ''} aria-pressed={h === horizon} onClick={() => onHorizon(h)}>
-                {h}
-              </button>
-            ))}
-          </div>
-          <span className="hz-note">
-            GWP20 weights short-lived contrails heavier than the 100-year basis — watch the contrail number move. (A
-            time-horizon choice, not the aviation-wide ~3× ERF.)
-          </span>
-        </div>
+        <HorizonToggle
+          horizon={horizon}
+          onHorizon={onHorizon}
+          note="Watch the contrail number move — GWP20 weights short-lived contrails heavier than the 100-year basis."
+        />
       </Appear>
 
       <div className="pills">
@@ -176,7 +193,12 @@ export default function Explorer({
 
         <div className="exp-map">
           <Suspense fallback={null}>
-            <FlightMap flightId={sel.flight_id} owner={owner} date={prettyDate(sel.date)} />
+            <FlightMap
+              flightId={sel.flight_id}
+              owner={owner}
+              date={prettyDate(sel.date)}
+              activeSegment={active >= 0 ? active : undefined}
+            />
           </Suspense>
           <div className="map-cap">
             <b>{owner} · {prettyDate(sel.date)}</b> — the contrail inks itself along the real flight path, coloured by where warming happened.
@@ -187,6 +209,7 @@ export default function Explorer({
             </div>
           </div>
         </div>
+        {track && <Profile track={track} active={active >= 0 ? active : track.peakIndex} onActive={setActive} />}
       </div>
     </section>
   )

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -6,6 +7,11 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   server: { host: true, port: 5173 },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test-setup.ts'],
+  },
   build: {
     chunkSizeWarningLimit: 1200,
     rollupOptions: {

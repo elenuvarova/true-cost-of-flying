@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { useLenis } from './lib/scroll'
 import { Flight, Horizon, aggregateOwners, loadFlights } from './lib/data'
 import Hero from './components/Hero'
 import Leaderboard from './components/Leaderboard'
-import Explorer from './components/Explorer'
 import PlaneField from './components/PlaneField'
+
+// Everything below the ranking is off-screen at first paint, so it loads as its
+// own chunk. Keeping these eager pushed the entry chunk to 72.8 KB gzip, over
+// the 70 KB budget; deferring them brings it back under.
+const DayOrNight = lazy(() => import('./components/DayOrNight'))
+const OneSegment = lazy(() => import('./components/OneSegment'))
+const Explorer = lazy(() => import('./components/Explorer'))
+const NightWidebodies = lazy(() => import('./components/NightWidebodies'))
+const HowWeKnow = lazy(() => import('./components/HowWeKnow'))
 
 export default function App() {
   const [flights, setFlights] = useState<Flight[]>([])
@@ -45,8 +53,14 @@ export default function App() {
         )}
         {status === 'ok' && (
           <>
-            <Leaderboard owners={owners} total={flights.length} />
-            <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
+            <Leaderboard owners={owners} total={flights.length} horizon={horizon} onHorizon={setHorizon} />
+            <Suspense fallback={null}>
+              <DayOrNight flights={flights} horizon={horizon} />
+              <OneSegment flights={flights} />
+              <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
+              <NightWidebodies />
+              <HowWeKnow flights={flights} horizon={horizon} />
+            </Suspense>
           </>
         )}
 

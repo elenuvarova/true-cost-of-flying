@@ -10,13 +10,13 @@ import csv
 import gzip
 import io
 import json
-import math
 import os
 import sys
 import tarfile
 
 import numpy as np
 import pandas as pd
+from src.solar import solar_elev
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 COMPARATORS_CSV = os.path.join(ROOT, "data", "reference", "comparators.csv")
@@ -40,21 +40,6 @@ NA_LAT_MIN, NA_LAT_MAX = 40.0, 62.0
 EDGE_LON_MIN, EDGE_LON_MAX = -78.0, 5.0
 WEST_LON, EAST_LON = -55.0, -12.0  # cruise must reach US side (<=WEST) AND Europe (>=EAST)
 MIN_CRUISE_FT = 28000.0
-
-
-def solar_elev(lat, lon, when):  # when = pandas.Timestamp (UTC)
-    n = when.dayofyear
-    frac = (when.hour + when.minute / 60) / 24
-    g = 2 * math.pi / 365 * (n - 1 + frac - 0.5)
-    dec = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g)
-           - 0.006758 * math.cos(2 * g) + 0.000907 * math.sin(2 * g))
-    eqt = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
-                    - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
-    tst = (when.hour * 60 + when.minute) + eqt + 4 * lon
-    ha = math.radians(tst / 4 - 180)
-    la = math.radians(lat)
-    return math.degrees(math.asin(max(-1, min(1, math.sin(la) * math.sin(dec)
-                                              + math.cos(la) * math.cos(dec) * math.cos(ha)))))
 
 
 def trace_points(d):

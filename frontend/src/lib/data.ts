@@ -20,6 +20,8 @@ export interface Flight {
   proxy_type_flag: boolean
   coverage_gap_flag: boolean
   tier: string
+  night_pct_of_waypoints: number | null
+  night_class: 'night' | 'mixed' | 'day' | null
 }
 
 export interface OwnerAgg {
@@ -103,6 +105,105 @@ export function standoutFlight(flights: Flight[]): Flight {
   return flights.reduce((best, f) =>
     Math.abs(f.contrail_co2e_central) > Math.abs(best.contrail_co2e_central) ? f : best,
   )
+}
+
+// ---- ranking metrics ----------------------------------------------------
+// Switching the metric reshuffles the board, and that reshuffle IS the thesis:
+// fuel CO2 alone tells a different story from fuel + contrails.
+export type Metric = 'fuel' | 'combined' | 'contrail'
+
+export const METRIC_LABEL: Record<Metric, string> = {
+  fuel: 'Fuel CO₂',
+  combined: 'Combined CO₂e',
+  contrail: 'Contrails only',
+}
+
+export function metricT(o: OwnerAgg, m: Metric): number {
+  return m === 'fuel' ? o.fuelT : m === 'contrail' ? o.contrailT : o.combinedT
+}
+
+// Signed sort: a net-cooling owner belongs at the bottom of "contrails only",
+// not at the top by magnitude. Tier travels with the owner and is NOT
+// recomputed from the new position — tier colour means "share of combined
+// warming", and that meaning must not change when you look at a sub-metric.
+export function rankByMetric(owners: OwnerAgg[], m: Metric): OwnerAgg[] {
+  return [...owners].sort((a, b) => metricT(b, m) - metricT(a, m))
+}
+
+export interface ReshuffleStats {
+  moved: number
+  total: number
+  biggest: { owner: string; from: number; to: number } | null
+}
+
+// How many owners change position between two metrics, and who moves furthest.
+// Positions are 1-based because the caption says them out loud.
+export function reshuffleStats(owners: OwnerAgg[], from: Metric, to: Metric): ReshuffleStats {
+  const posIn = (m: Metric) => new Map(rankByMetric(owners, m).map((o, i) => [o.owner, i + 1]))
+  const a = posIn(from)
+  const b = posIn(to)
+  let moved = 0
+  let biggest: ReshuffleStats['biggest'] = null
+  let bestDelta = 0
+  for (const o of owners) {
+    const pa = a.get(o.owner)!
+    const pb = b.get(o.owner)!
+    const d = Math.abs(pa - pb)
+    if (d === 0) continue
+    moved++
+    if (d > bestDelta) {
+      bestDelta = d
+      biggest = { owner: o.owner, from: pa, to: pb }
+    }
+  }
+  return { moved, total: owners.length, biggest }
+}
+
+// ---- day / night --------------------------------------------------------
+// night_class comes from batch/add_night_split.py: the share of a flight's
+// CRUISE waypoints with the sun more than 6 degrees below the horizon.
+export interface NightGroup {
+  cls: 'night' | 'mixed' | 'day'
+  flights: number
+  warmed: number
+  cooled: number
+  co2eT: number
+}
+
+const NIGHT_ORDER: NightGroup['cls'][] = ['night', 'mixed', 'day']
+
+// Only flights that actually formed a contrail are counted: the ~54 that formed
+// nothing say nothing about the sign of the effect and would swamp the ratios.
+export function nightSplit(flights: Flight[], h: Horizon): NightGroup[] {
+  return NIGHT_ORDER.map((cls) => {
+    const fs = flights.filter((f) => f.night_class === cls && f.contrail_ef_joules !== 0)
+    return {
+      cls,
+      flights: fs.length,
+      warmed: fs.filter((f) => f.contrail_ef_joules > 0).length,
+      cooled: fs.filter((f) => f.contrail_ef_joules < 0).length,
+      co2eT: fs.reduce((s, f) => s + contrailKg(f, h), 0) / 1000,
+    }
+  })
+}
+
+// ---- night transatlantic comparators ------------------------------------
+export interface Comparator {
+  flight_id: string
+  owner_label: string
+  ac_type: string
+  fuel_co2_kg: number
+  contrail_co2e_central: number
+  contrail_pct_of_fuel: number
+}
+
+export async function loadComparators(): Promise<Comparator[]> {
+  try {
+    const r = await fetch('./data/comparators.json')
+    return r.ok ? await r.json() : []
+  } catch {
+    return []
+  }
 }
 
 // Featured flyers — verified, fact-checked copy carried over from the audited dataset.
