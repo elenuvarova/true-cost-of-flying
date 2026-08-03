@@ -159,6 +159,34 @@ export function reshuffleStats(owners: OwnerAgg[], from: Metric, to: Metric): Re
   return { moved, total: owners.length, biggest }
 }
 
+// ---- day / night --------------------------------------------------------
+// night_class comes from batch/add_night_split.py: the share of a flight's
+// CRUISE waypoints with the sun more than 6 degrees below the horizon.
+export interface NightGroup {
+  cls: 'night' | 'mixed' | 'day'
+  flights: number
+  warmed: number
+  cooled: number
+  co2eT: number
+}
+
+const NIGHT_ORDER: NightGroup['cls'][] = ['night', 'mixed', 'day']
+
+// Only flights that actually formed a contrail are counted: the ~54 that formed
+// nothing say nothing about the sign of the effect and would swamp the ratios.
+export function nightSplit(flights: Flight[], h: Horizon): NightGroup[] {
+  return NIGHT_ORDER.map((cls) => {
+    const fs = flights.filter((f) => f.night_class === cls && f.contrail_ef_joules !== 0)
+    return {
+      cls,
+      flights: fs.length,
+      warmed: fs.filter((f) => f.contrail_ef_joules > 0).length,
+      cooled: fs.filter((f) => f.contrail_ef_joules < 0).length,
+      co2eT: fs.reduce((s, f) => s + contrailKg(f, h), 0) / 1000,
+    }
+  })
+}
+
 // Featured flyers — verified, fact-checked copy carried over from the audited dataset.
 export const FEATURED_ORDER = ['Donald Trump', 'Taylor Swift', 'Drake', 'Elon Musk', 'Bill Gates']
 
