@@ -12,6 +12,7 @@ import {
 } from '../lib/data'
 import { rgbCss, AMBER, RED, BLUE } from '../lib/colors'
 import Reveal from './Reveal'
+import HorizonToggle from './HorizonToggle'
 import Appear from './Appear'
 
 // Code-split the heavy deck.gl/maplibre map off the hero's critical path.
@@ -88,19 +89,11 @@ export default function Explorer({
           Fuel is the certain harm. Contrails are the wildcard — a concentrated effect from crossing ice-supersaturated
           air, not a flat multiplier. Usually near zero, occasionally a lot.
         </p>
-        <div className="hzrow">
-          <div className="hztoggle" role="group" aria-label="Time horizon">
-            {(['GWP100', 'GWP20'] as Horizon[]).map((h) => (
-              <button key={h} className={h === horizon ? 'on' : ''} aria-pressed={h === horizon} onClick={() => onHorizon(h)}>
-                {h}
-              </button>
-            ))}
-          </div>
-          <span className="hz-note">
-            GWP20 weights short-lived contrails heavier than the 100-year basis — watch the contrail number move. (A
-            time-horizon choice, not the aviation-wide ~3× ERF.)
-          </span>
-        </div>
+        <HorizonToggle
+          horizon={horizon}
+          onHorizon={onHorizon}
+          note="Watch the contrail number move — GWP20 weights short-lived contrails heavier than the 100-year basis."
+        />
       </Appear>
 
       <div className="pills">

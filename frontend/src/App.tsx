@@ -45,7 +45,7 @@ export default function App() {
         )}
         {status === 'ok' && (
           <>
-            <Leaderboard owners={owners} total={flights.length} />
+            <Leaderboard owners={owners} total={flights.length} horizon={horizon} onHorizon={setHorizon} />
             <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
           </>
         )}

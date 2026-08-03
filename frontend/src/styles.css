@@ -224,3 +224,10 @@ section{ position:relative; }
 
 footer{ padding:4rem 0 5rem; color:var(--muted); font-size:.85rem; line-height:1.6; }
 footer .wrap{ border-top:1px solid var(--hair); padding-top:2rem; }
+
+/* metric switch above the ranking grid */
+.metricrow{ display:flex; flex-wrap:wrap; align-items:center; gap:.7rem 1.2rem; margin:1.6rem 0 .4rem; }
+.metricrow .hztoggle button{ font-size:.8rem; padding:.42rem .9rem; }
+.lb-grid .lb-hero{ grid-column:span 12; }
+.lb-grid .lb-row{ grid-column:span 6; }
+@media (max-width:720px){ .lb-grid .lb-row{ grid-column:span 12; } }
