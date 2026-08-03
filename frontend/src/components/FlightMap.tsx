@@ -130,7 +130,17 @@ const layerAt = (trips: Trip[], n: number, t: number) =>
     fadeTrail: false,
   } as any)
 
-export default function FlightMap({ flightId, owner, date }: { flightId: string; owner?: string; date?: string }) {
+export default function FlightMap({
+  flightId,
+  owner,
+  date,
+  activeSegment,
+}: {
+  flightId: string
+  owner?: string
+  date?: string
+  activeSegment?: number
+}) {
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const overlayRef = useRef<MapboxOverlay | null>(null)
@@ -183,6 +193,14 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
     const total = nRef.current
     const overlay = overlayRef.current
     const seeds = seedsRef.current
+    // Driven from outside (section 03 scrubs by scroll): hold at that segment
+    // instead of running the loop, so the chart and the map show one cursor.
+    if (activeSegment !== undefined && activeSegment >= 0) {
+      const t = Math.min(total, activeSegment + 1)
+      overlay?.setProps({ layers: [...bloomLayers(seeds, t, total), layerAt(trips, total, t), planeLayer(headAt(trips, t))] })
+      return
+    }
+
     if (reduced()) {
       // fully drawn, every warming/cooling bloom lit, plane parked at the destination
       overlay?.setProps({ layers: [...bloomLayers(seeds, total, total), layerAt(trips, total, total), planeLayer(headAt(trips, total))] })
@@ -204,7 +222,7 @@ export default function FlightMap({ flightId, owner, date }: { flightId: string;
     }
     raf = requestAnimationFrame(tick)
     return () => { cancelAnimationFrame(raf); io.disconnect() }
-  }, [trips])
+  }, [trips, activeSegment])
 
   const label = owner
     ? `Flight-path map: ${owner}${date ? `, ${date}` : ''}. The contrail is coloured by where warming occurred — red warms, blue cools, amber is the fuel-CO₂ baseline. The figures are in the panel above this map.`

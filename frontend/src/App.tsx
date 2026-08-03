@@ -4,6 +4,7 @@ import { Flight, Horizon, aggregateOwners, loadFlights } from './lib/data'
 import Hero from './components/Hero'
 import Leaderboard from './components/Leaderboard'
 import Explorer from './components/Explorer'
+import OneSegment from './components/OneSegment'
 import PlaneField from './components/PlaneField'
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
         {status === 'ok' && (
           <>
             <Leaderboard owners={owners} total={flights.length} horizon={horizon} onHorizon={setHorizon} />
+            <OneSegment flights={flights} />
             <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
           </>
         )}

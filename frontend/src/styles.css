@@ -231,3 +231,22 @@ footer .wrap{ border-top:1px solid var(--hair); padding-top:2rem; }
 .lb-grid .lb-hero{ grid-column:span 12; }
 .lb-grid .lb-row{ grid-column:span 6; }
 @media (max-width:720px){ .lb-grid .lb-row{ grid-column:span 12; } }
+
+/* ============================================================ 03 · ONE SEGMENT */
+.oneseg{ padding:6rem 0 0; }
+.oneseg-stage{ height:260svh; position:relative; }
+.oneseg-pin{ position:sticky; top:0; height:100svh; display:flex; flex-direction:column;
+  justify-content:center; gap:1.2rem; overflow:hidden; }
+/* sits inside the same .wrap as the bar chart, so both share one column —
+   they are one instrument showing the same cursor twice. */
+.oneseg-map{ position:relative; height:min(52vh,460px); border-radius:20px; overflow:hidden;
+  border:1px solid var(--hair); background:#06101c; }
+.segbars{ margin-top:1rem; }
+.segbars svg{ width:100%; height:clamp(120px,18vh,220px); display:block; }
+.oneseg-cap{ color:var(--muted); font-size:.86rem; margin:.6rem 0 0; font-variant-numeric:tabular-nums; }
+.oneseg-cap b{ color:var(--ink); }
+.oneseg-hit{ color:var(--warm-deep) !important; }
+@media (prefers-reduced-motion:reduce){
+  .oneseg-stage{ height:auto; }
+  .oneseg-pin{ position:relative; height:auto; padding-block:2rem; }
+}

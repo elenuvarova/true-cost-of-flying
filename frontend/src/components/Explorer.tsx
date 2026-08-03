@@ -78,7 +78,7 @@ export default function Explorer({
   return (
     <section className="exp wrap" id="explore">
       <Appear>
-        <div className="eyebrow">02 — The explorer</div>
+        <div className="eyebrow">04 — The explorer</div>
         <h2 className="sec-head" style={{ marginTop: '.6rem' }}>
           Pick a flyer, then the{' '}
           <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 600, color: 'var(--warm)' }}>
