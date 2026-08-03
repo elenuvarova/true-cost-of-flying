@@ -1,4 +1,10 @@
 // Data layer — fetches the static JSON exported from the parquet pipeline, plus helpers.
+//
+// Every /data URL carries ?v=<build id>. nginx caches these for 24h at otherwise
+// stable paths, so without it a deploy that adds a required field leaves
+// returning visitors on a stale file. See vite.config.ts.
+declare const __DATA_VERSION__: string
+const V = `?v=${__DATA_VERSION__}`
 export type Horizon = 'GWP100' | 'GWP20'
 
 export interface Flight {
@@ -46,13 +52,13 @@ export const tonnes = (kg: number, dp = 1) =>
   `${(kg / 1000).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp })}`
 
 export async function loadFlights(): Promise<Flight[]> {
-  const r = await fetch('./data/leaderboard.json')
+  const r = await fetch(`./data/leaderboard.json${V}`)
   if (!r.ok) throw new Error(`leaderboard.json ${r.status}`)
   return r.json()
 }
 export async function loadTrack(flightId: string): Promise<any | null> {
   try {
-    const r = await fetch(`./data/tracks/${flightId}.geojson`)
+    const r = await fetch(`./data/tracks/${flightId}.geojson${V}`)
     return r.ok ? r.json() : null
   } catch {
     return null
@@ -199,7 +205,7 @@ export interface Comparator {
 
 export async function loadComparators(): Promise<Comparator[]> {
   try {
-    const r = await fetch('./data/comparators.json')
+    const r = await fetch(`./data/comparators.json${V}`)
     return r.ok ? await r.json() : []
   } catch {
     return []
