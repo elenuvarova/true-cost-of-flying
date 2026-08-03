@@ -6,14 +6,12 @@ Outputs into frontend/public/data/ so Vite serves them as static assets.
 """
 import json
 import os
-import shutil
 
 import pandas as pd
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROC = os.path.join(ROOT, "data", "processed")
 OUT = os.path.join(ROOT, "frontend", "public", "data")
-os.makedirs(os.path.join(OUT, "tracks"), exist_ok=True)
 
 
 def _clean(df):
@@ -38,28 +36,62 @@ def export_parquet(name):
     return len(df)
 
 
-n_lb = export_parquet("leaderboard.parquet")
+def slim_feature(feat):
+    """Reduce one track feature to what the web needs.
 
-# Per-flight track geojson, slimmed for the web: round coords to 5 dp (~1 m), drop the
-# unused altitude (3rd element) and keep only `ef_share` (the only field the map reads), minified.
-src_tracks = os.path.join(PROC, "tracks")
-n_tracks = 0
-if os.path.isdir(src_tracks):
+    Coordinates keep [lon, lat, alt_m] — lon/lat to 5 dp (~1 m), altitude to the
+    nearest 10 m. Properties keep `ef_share` (the map's colour ramp) and `ef_tj`,
+    the SIGNED energy forcing in terajoules — signed because the sign is the
+    warming/cooling story, terajoules because raw joules are ~1e13 and bloat JSON.
+
+    ef_tj keeps 6 dp (1 kJ). 3 dp would be plenty for anything visible, but it
+    rounds the smallest real segment in the set (2.4e8 J) to zero, which would
+    quietly change a non-zero segment count the story is built on.
+    """
+    g = feat.get("geometry") or {}
+    if g.get("type") == "LineString":
+        g = dict(g, coordinates=[
+            [round(p[0], 5), round(p[1], 5), round(p[2], -1) if len(p) > 2 else 0.0]
+            for p in g["coordinates"]
+        ])
+    props = feat.get("properties") or {}
+    return {
+        "type": feat.get("type", "Feature"),
+        "geometry": g,
+        "properties": {
+            "ef_share": round(float(props.get("ef_share") or 0.0), 5),
+            "ef_tj": round(float(props.get("ef") or 0.0) / 1e12, 6),
+        },
+    }
+
+
+def export_tracks():
+    src_tracks = os.path.join(PROC, "tracks")
+    n = 0
+    if not os.path.isdir(src_tracks):
+        return 0
     for f in os.listdir(src_tracks):
         if not f.endswith(".geojson"):
             continue
         gj = json.load(open(os.path.join(src_tracks, f)))
-        for feat in gj.get("features", []):
-            g = feat.get("geometry", {})
-            if g.get("type") == "LineString":
-                g["coordinates"] = [[round(p[0], 5), round(p[1], 5)] for p in g["coordinates"]]
-            feat["geometry"] = g
-            feat["properties"] = {"ef_share": (feat.get("properties") or {}).get("ef_share", 0.0)}
+        gj["features"] = [slim_feature(ft) for ft in gj.get("features", [])]
         json.dump(gj, open(os.path.join(OUT, "tracks", f), "w"), separators=(",", ":"))
-        n_tracks += 1
+        n += 1
+    return n
 
-# A tiny manifest so the frontend knows what's available without a directory listing.
-with open(os.path.join(OUT, "manifest.json"), "w") as fh:
-    json.dump({"leaderboard": n_lb, "tracks": n_tracks}, fh)
 
-print(f"exported: leaderboard={n_lb} flights, tracks={n_tracks} geojson -> {OUT}")
+def main():
+    os.makedirs(os.path.join(OUT, "tracks"), exist_ok=True)
+    n_lb = export_parquet("leaderboard.parquet")
+    n_cmp = export_parquet("comparators.parquet")
+    n_tracks = export_tracks()
+
+    # A tiny manifest so the frontend knows what's available without a directory listing.
+    with open(os.path.join(OUT, "manifest.json"), "w") as fh:
+        json.dump({"leaderboard": n_lb, "tracks": n_tracks, "comparators": n_cmp}, fh)
+
+    print(f"exported: leaderboard={n_lb} flights, comparators={n_cmp}, tracks={n_tracks} geojson -> {OUT}")
+
+
+if __name__ == "__main__":
+    main()
