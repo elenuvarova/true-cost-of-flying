@@ -47,6 +47,16 @@ describe('HowWeKnow', () => {
     expect(screen.getByTestId('hwk-bias')).toHaveTextContent(/deliberately harvested/i)
   })
 
+  it('quantifies the night weighting as a count, not a phrase', () => {
+    const mixed = [
+      flight({ flight_id: 'n1', night_class: 'night' }),
+      flight({ flight_id: 'n2', night_class: 'night' }),
+      flight({ flight_id: 'd1', night_class: 'day' }),
+    ]
+    render(<HowWeKnow flights={mixed} horizon="GWP100" />)
+    expect(screen.getByTestId('hwk-bias')).toHaveTextContent('2 of 3')
+  })
+
   it('keeps the band ordered low-to-high even when the net is negative', () => {
     const cooling = [
       flight({ flight_id: 'k', contrail_ef_joules: -1e14, contrail_co2e_central: -30000, contrail_co2e_low: -36000, contrail_co2e_high: -25000 }),

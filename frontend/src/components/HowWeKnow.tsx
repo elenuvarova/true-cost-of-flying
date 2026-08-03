@@ -5,6 +5,7 @@ export default function HowWeKnow({ flights, horizon }: { flights: Flight[]; hor
   const n = flights.length
   const formed = flights.filter((f) => f.contrail_ef_joules !== 0).length
   const flagged = flights.filter((f) => f.bizjet_alt_flag || f.proxy_type_flag || f.coverage_gap_flag).length
+  const night = flights.filter((f) => f.night_class === 'night').length
 
   const contrail = flights.reduce((s, f) => s + contrailKg(f, horizon), 0)
   // Scale the GWP100 low/high endpoints to the chosen horizon, then sort —
@@ -52,24 +53,6 @@ export default function HowWeKnow({ flights, horizon }: { flights: Flight[]; hor
           </p>
         </div>
 
-        <div className="hwk-card hwk-wide">
-          <div className="hwk-l">Uncertainty · {horizon}</div>
-          <div className="hwk-band" aria-hidden="true">
-            <i />
-            <span style={{ left: `${centrePct}%` }} />
-          </div>
-          <div className="hwk-bandnums" data-testid="hwk-band">
-            <span>{tonnes(band[0])} t</span>
-            <b>{tonnes(contrail)} t central</b>
-            <span>{tonnes(band[1])} t</span>
-          </div>
-          <p>
-            The contrail term carries roughly ±70% uncertainty — the IPCC rates confidence in contrail radiative
-            forcing as <i>low</i>. Every contrail figure on this page sits inside that band. Fuel CO₂, by contrast, is
-            near-certain: it follows from fuel burnt.
-          </p>
-        </div>
-
         <div className="hwk-card">
           <div className="hwk-l">The EF → CO₂e bridge</div>
           <div className="hwk-v">0.8%</div>
@@ -82,11 +65,35 @@ export default function HowWeKnow({ flights, horizon }: { flights: Flight[]; hor
 
         <div className="hwk-card" data-testid="hwk-bias">
           <div className="hwk-l">Selection bias</div>
-          <div className="hwk-v">Night-weighted</div>
+          <div className="hwk-v">
+            {night} of {n}
+          </div>
           <p>
-            Part of this dataset was <b>deliberately harvested</b> for night flights, because that is where the
-            physics is most visible. The direction of the day/night result holds; the <i>share</i> of flights forming
-            contrails here is an upper estimate, not an unbiased sample of aviation.
+            flights cruised mostly in darkness, because part of this dataset was <b>deliberately harvested</b> for
+            night — that is where the physics is most visible. The direction of the day/night result holds; the{' '}
+            <i>share</i> of flights forming contrails here is an upper estimate, not an unbiased sample of aviation.
+          </p>
+        </div>
+
+        <div className="hwk-card hwk-wide">
+          <div className="hwk-l">Uncertainty · {horizon}</div>
+          <div className="hwk-band" aria-hidden="true">
+            <i />
+            <span style={{ left: `${centrePct}%` }} />
+          </div>
+          <div className="hwk-bandnums" data-testid="hwk-band">
+            <span>{tonnes(band[0])} t</span>
+            {/* rides the marker rather than sitting at the flex centre, which
+                would only line up when the central value happens to be at 50% */}
+            <b className="hwk-bandcentre" style={{ left: `${centrePct}%` }}>
+              {tonnes(contrail)} t central
+            </b>
+            <span>{tonnes(band[1])} t</span>
+          </div>
+          <p>
+            The contrail term carries roughly ±70% uncertainty — the IPCC rates confidence in contrail radiative
+            forcing as <i>low</i>. Every contrail figure on this page sits inside that band. Fuel CO₂, by contrast, is
+            near-certain: it follows from fuel burnt.
           </p>
         </div>
 
