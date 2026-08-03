@@ -280,3 +280,24 @@ footer .wrap{ border-top:1px solid var(--hair); padding-top:2rem; }
 .don-note b{ color:var(--ink-2); }
 @media (max-width:560px){ .diverge-row{ grid-template-columns:4.2rem 1fr 5.5rem; } }
 @media (prefers-reduced-motion:reduce){ .dayornight{ transition:none; } }
+
+/* ============================================================ 05 · COMPARATORS */
+.cmp{ padding:6rem 0; }
+.cmp-list{ margin-top:2.2rem; display:flex; flex-direction:column; gap:1px; background:var(--hair);
+  border:1px solid var(--hair); border-radius:18px; overflow:hidden; }
+.cmp-row{ background:var(--panel-2); padding:1.1rem 1.3rem; display:grid;
+  grid-template-columns:minmax(9rem,1.1fr) minmax(6rem,1.4fr) auto; align-items:center; gap:.6rem 1.2rem; }
+.cmp-name b{ display:block; font-family:var(--sans); font-size:1rem; }
+.cmp-name span{ color:var(--muted); font-size:.76rem; }
+.cmp-bar{ height:10px; background:rgba(255,255,255,.05); border-radius:5px; overflow:hidden; }
+.cmp-bar i{ display:block; height:100%; border-radius:5px;
+  background:linear-gradient(90deg,var(--fuel),var(--warm) 70%,var(--warm-deep)); }
+.cmp-nums{ display:flex; gap:.9rem; align-items:baseline; font-size:.8rem; color:var(--muted);
+  font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cmp-nums .fuel{ color:var(--fuel); } .cmp-nums .warm{ color:var(--warm); }
+.cmp-nums b{ font-family:var(--sans); font-size:1.15rem; color:var(--ink); }
+.cmp-agg{ margin-top:1.8rem; font-size:clamp(1.05rem,2.2vw,1.3rem); line-height:1.55; color:var(--ink-2); max-width:70ch; }
+.cmp-agg b{ color:var(--warm); }
+.cmp-caveat{ margin-top:1rem; color:var(--muted); font-size:.84rem; line-height:1.6; max-width:70ch; }
+.cmp-caveat b{ color:var(--ink-2); }
+@media (max-width:640px){ .cmp-row{ grid-template-columns:1fr; } .cmp-nums{ flex-wrap:wrap; white-space:normal; } }

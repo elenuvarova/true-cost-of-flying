@@ -187,6 +187,25 @@ export function nightSplit(flights: Flight[], h: Horizon): NightGroup[] {
   })
 }
 
+// ---- night transatlantic comparators ------------------------------------
+export interface Comparator {
+  flight_id: string
+  owner_label: string
+  ac_type: string
+  fuel_co2_kg: number
+  contrail_co2e_central: number
+  contrail_pct_of_fuel: number
+}
+
+export async function loadComparators(): Promise<Comparator[]> {
+  try {
+    const r = await fetch('./data/comparators.json')
+    return r.ok ? await r.json() : []
+  } catch {
+    return []
+  }
+}
+
 // Featured flyers — verified, fact-checked copy carried over from the audited dataset.
 export const FEATURED_ORDER = ['Donald Trump', 'Taylor Swift', 'Drake', 'Elon Musk', 'Bill Gates']
 

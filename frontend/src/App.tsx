@@ -6,6 +6,7 @@ import Leaderboard from './components/Leaderboard'
 import Explorer from './components/Explorer'
 import OneSegment from './components/OneSegment'
 import DayOrNight from './components/DayOrNight'
+import NightWidebodies from './components/NightWidebodies'
 import PlaneField from './components/PlaneField'
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
             <DayOrNight flights={flights} horizon={horizon} />
             <OneSegment flights={flights} />
             <Explorer flights={flights} horizon={horizon} onHorizon={setHorizon} />
+            <NightWidebodies />
           </>
         )}
 
