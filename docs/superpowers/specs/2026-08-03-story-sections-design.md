@@ -50,8 +50,28 @@ re-derived at build time, never hardcoded, except where noted as copy.
 - Trump `aa3410_20250214` is the *magnitude* case, not the power-law case:
   14 non-zero of 158, top-1 = 14.1%, top-5 = 66.3%, +90.2 t, FL401.
 
-**2.3 Day/night** (from `docs/VALIDATION.md` §6, 62 cached CoCiP runs):
-night waypoints +2.6e14 J, 100% warming (136/136); day −9.6e13 J, 74% cooling.
+**2.3 Day/night.** Two separate results, and they must not be conflated.
+
+*Prior, waypoint-level* (`docs/VALIDATION.md` §6, 62 cached CoCiP runs): night
+waypoints +2.6e14 J, 100% warming (136/136); day −9.6e13 J, 74% cooling. This
+requires per-waypoint EF from inside the CoCiP run and **cannot be recomputed
+from committed data** — quote it as a prior finding, do not redraw it.
+
+*New, flight-level* — computed during design from `data/raw/traces/` by solar
+elevation over cruise waypoints (≥20 000 ft), classifying each flight
+night (≥70% night waypoints) / mixed / day (≤30%), then summing the flight-level
+`contrail_ef_joules` already in `leaderboard.parquet`. **All 84 flights matched a
+raw trace; none missing.** Counting only the 30 flights that formed a contrail:
+
+| Class | Flights w/ contrail | Warmed | Cooled | Σ EF (J) | Σ CO₂e |
+| --- | --- | --- | --- | --- | --- |
+| Night | 10 | **10** | **0** | +5.65e14 | +160.7 t |
+| Mixed | 5 | 4 | 1 | +1.13e14 | +32.2 t |
+| Day | 15 | 4 | **11** | −1.91e14 | −54.4 t |
+
+Section 02 is built on **this** table, because it is reproducible from committed
+inputs. Day cooling comes out at 73% here against the prior's 74% at waypoint
+level — an independent corroboration worth stating in the caption.
 
 **2.4 Night transatlantic comparators** (`data/processed/comparators.parquet`,
 5 flights, already committed, currently absent from the frontend):
@@ -111,10 +131,12 @@ must not show a per-flight percentage of fuel — that invites the aviation-wide
 
 The single most important finding, and currently unrendered.
 
-A diverging bar from a centre zero axis: day to the left in `--cool`, night to
-the right in `--warm-deep`, labelled with the aggregate joules and the
-warming/cooling counts. Beneath it, two small stacked proportion bars: *"night:
-136 of 136 waypoints warmed"* and *"day: 74% cooled"*.
+A diverging bar from a centre zero axis, built on the flight-level table in
+§2.3: day to the left in `--cool`, night to the right in `--warm-deep`, labelled
+with the summed CO₂e and the warmed/cooled counts. Beneath it, the headline
+comparison — *"night: 10 of 10 warmed, none cooled"* against *"day: 11 of 15
+cooled"* — and a line noting that the prior waypoint-level analysis found 74%
+day cooling, so the two methods agree.
 
 The section background is scroll-linked from the page's daylight blue to near
 black across its own scroll range — the only place the day→night colour move is
@@ -210,16 +232,27 @@ path. Verify the real figure after the change rather than trusting this estimate
 ### 5.2 — New offline script: per-flight night split
 
 `batch/add_night_split.py` — reads `data/raw/traces/*.json.gz`, applies the
-existing `solar_elev()` (lifted into `src/` so the four copies collapse to one),
-and writes `night_pct_of_waypoints`, `night_ef_joules`, `day_ef_joules` into
-`data/processed/leaderboard.parquet`, matching the columns `comparators.parquet`
-already has.
+existing `solar_elev()` (lifted into `src/solar.py` so the four copies collapse
+to one), and writes **`night_pct_of_waypoints`** and a derived
+**`night_class` ∈ {night, mixed, day}** into
+`data/processed/leaderboard.parquet`.
+
+It does **not** write `night_ef_joules` / `day_ef_joules`. Those need
+per-waypoint EF from inside the CoCiP run, which is not in any committed file;
+`comparators.parquet` has them only because `build_comparators.py` computed them
+during its own physics run. Section 02 uses the flight-level split instead
+(§2.3), which needs nothing but the raw trace and the signed
+`contrail_ef_joules` already on the board.
+
+Waypoints are filtered to cruise (≥20 000 ft) before the solar-elevation test,
+so taxi and climb do not dilute the classification. Thresholds: night ≥70% of
+cruise waypoints below −6° solar elevation, day ≤30%, mixed in between.
 
 Pure reshaping: no network, no ERA5, no pycontrails. This respects the
 project's first rule — heavy physics stays offline, the deployed app only reads.
 
-If a flight's raw trace is missing, the field is null and section 02 excludes it
-from counts rather than assuming a value.
+All 84 flights currently match a raw trace. If one ever does not, the fields are
+null and section 02 excludes it from counts rather than assuming a value.
 
 ### 5.3 — Export the comparators
 
